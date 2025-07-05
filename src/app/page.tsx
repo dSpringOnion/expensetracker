@@ -134,8 +134,8 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <header className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Expense Tracker</h1>
-            <p className="text-gray-600">Track your expenses with manual entries and photo uploads</p>
+            <h1 className="text-4xl font-bold text-slate-900 mb-3">Expense Tracker</h1>
+            <p className="text-lg text-slate-700">Track your expenses with manual entries and photo uploads</p>
           </header>
 
           <div className="bg-white rounded-lg shadow-sm border mb-6">
@@ -148,7 +148,7 @@ export default function Home() {
                     className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
                       activeTab === tab.id
                         ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        : 'border-transparent text-slate-600 hover:text-slate-800'
                     }`}
                   >
                     <tab.icon className="h-4 w-4" />
@@ -161,14 +161,14 @@ export default function Home() {
             <div className="p-6">
               {activeTab === 'add' && (
                 <div className="max-w-md mx-auto">
-                  <h2 className="text-xl font-semibold mb-6">Add New Expense</h2>
+                  <h2 className="text-2xl font-semibold text-slate-900 mb-6">Add New Expense</h2>
                   <ExpenseForm onSubmit={handleAddExpense} />
                 </div>
               )}
 
               {activeTab === 'photo' && (
                 <div className="max-w-md mx-auto">
-                  <h2 className="text-xl font-semibold mb-6">Upload Receipt Photo</h2>
+                  <h2 className="text-2xl font-semibold text-slate-900 mb-6">Upload Receipt Photo</h2>
                   <PhotoUpload
                     onUpload={handlePhotoUpload}
                     onExtractedData={() => {
@@ -182,7 +182,7 @@ export default function Home() {
 
               {activeTab === 'list' && (
                 <div>
-                  <h2 className="text-xl font-semibold mb-6">Your Expenses</h2>
+                  <h2 className="text-2xl font-semibold text-slate-900 mb-6">Your Expenses</h2>
                   
                   <ExpenseStats expenses={filteredExpenses} className="mb-6" />
                   
