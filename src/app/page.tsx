@@ -120,35 +120,35 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-slack-panel">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading expenses...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007a5a] mx-auto mb-4"></div>
+          <p className="text-slack-secondary">Loading expenses...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slack-panel">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <header className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-slate-900 mb-3">Expense Tracker</h1>
-            <p className="text-lg text-slate-700">Track your expenses with manual entries and photo uploads</p>
+            <h1 className="text-4xl font-bold text-slack-primary mb-3">Expense Tracker</h1>
+            <p className="text-lg text-slack-secondary">Track your expenses with manual entries and photo uploads</p>
           </header>
 
-          <div className="bg-white rounded-lg shadow-sm border mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-slack mb-6">
             <div className="border-b">
               <nav className="flex space-x-8 px-6">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as 'add' | 'photo' | 'list')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                    className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
                       activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-slate-600 hover:text-slate-800'
+                        ? 'border-[#007a5a] text-[#007a5a]'
+                        : 'border-transparent text-slack-secondary hover:text-slack-primary'
                     }`}
                   >
                     <tab.icon className="h-4 w-4" />
@@ -161,14 +161,14 @@ export default function Home() {
             <div className="p-6">
               {activeTab === 'add' && (
                 <div className="max-w-md mx-auto">
-                  <h2 className="text-2xl font-semibold text-slate-900 mb-6">Add New Expense</h2>
+                  <h2 className="text-2xl font-semibold text-slack-primary mb-6">Add New Expense</h2>
                   <ExpenseForm onSubmit={handleAddExpense} />
                 </div>
               )}
 
               {activeTab === 'photo' && (
                 <div className="max-w-md mx-auto">
-                  <h2 className="text-2xl font-semibold text-slate-900 mb-6">Upload Receipt Photo</h2>
+                  <h2 className="text-2xl font-semibold text-slack-primary mb-6">Upload Receipt Photo</h2>
                   <PhotoUpload
                     onUpload={handlePhotoUpload}
                     onExtractedData={() => {
@@ -182,7 +182,7 @@ export default function Home() {
 
               {activeTab === 'list' && (
                 <div>
-                  <h2 className="text-2xl font-semibold text-slate-900 mb-6">Your Expenses</h2>
+                  <h2 className="text-2xl font-semibold text-slack-primary mb-6">Your Expenses</h2>
                   
                   <ExpenseStats expenses={filteredExpenses} className="mb-6" />
                   

@@ -1,60 +1,57 @@
 @import "tailwindcss";
 
+/* Slack-inspired color scheme */
 :root {
-  --background: #f8fafc;
-  --foreground: #1e293b;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #475569;
-  --accent: #e2e8f0;
-  --accent-foreground: #1e293b;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #ffffff;
-  --ring: #3b82f6;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --background: #ffffff;
+  --sidebar-background: #3f0f40;
+  --panel-background: #f8f8f8;
+  --foreground: #1d1c1d;
+  --muted-foreground: #616061;
+  --light-foreground: #868686;
+  --primary: #007a5a;
+  --primary-hover: #006644;
+  --accent: #1264a3;
+  --accent-hover: #0f5a94;
+  --border: #e1e1e1;
+  --hover-background: #f6f6f6;
+  --active-background: #eeeeee;
+  --success: #007a5a;
+  --warning: #e8912d;
+  --error: #e01e5a;
+  --input-background: #ffffff;
+  --input-border: #d1d1d1;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-muted: var(--muted);
+  --color-primary-foreground: #ffffff;
+  --color-muted: var(--panel-background);
   --color-muted-foreground: var(--muted-foreground);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --color-border: var(--border);
+  --color-input: var(--input-background);
+  --color-ring: var(--accent);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, "Ubuntu", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
-    --foreground: #f1f5f9;
-    --primary: #3b82f6;
-    --primary-foreground: #ffffff;
-    --secondary: #1e293b;
-    --secondary-foreground: #cbd5e1;
-    --accent: #334155;
-    --accent-foreground: #f1f5f9;
-    --destructive: #ef4444;
-    --destructive-foreground: #ffffff;
-    --border: #334155;
-    --input: #1e293b;
-    --ring: #3b82f6;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
+    --background: #1a1d29;
+    --sidebar-background: #1a1d29;
+    --panel-background: #222529;
+    --foreground: #d1d2d3;
+    --muted-foreground: #ababad;
+    --light-foreground: #868686;
+    --primary: #00d4aa;
+    --primary-hover: #00b896;
+    --accent: #1d9bd1;
+    --accent-hover: #1a8bc0;
+    --border: #3a3d42;
+    --hover-background: #26292e;
+    --active-background: #2c2f36;
+    --input-background: #222529;
+    --input-border: #3a3d42;
   }
 }
 
@@ -62,33 +59,58 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  line-height: 1.6;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Improve text contrast and readability */
-.text-gray-600 {
-  color: var(--muted-foreground) !important;
+/* Slack-style utility classes */
+.bg-slack-panel {
+  background-color: var(--panel-background);
 }
 
-.text-gray-500 {
-  color: var(--muted-foreground) !important;
-  opacity: 0.8;
+.text-slack-primary {
+  color: var(--foreground);
 }
 
-.text-gray-900 {
-  color: var(--foreground) !important;
+.text-slack-secondary {
+  color: var(--muted-foreground);
+}
+
+.text-slack-light {
+  color: var(--light-foreground);
+}
+
+.border-slack {
+  border-color: var(--border);
+}
+
+.hover\:bg-slack-hover:hover {
+  background-color: var(--hover-background);
+}
+
+.bg-slack-active {
+  background-color: var(--active-background);
+}
+
+/* Button styles */
+.btn-slack-primary {
+  background-color: var(--primary);
+  color: white;
+  border: none;
   font-weight: 600;
 }
 
-.bg-gray-50 {
-  background-color: var(--background) !important;
+.btn-slack-primary:hover {
+  background-color: var(--primary-hover);
 }
 
-.bg-white {
-  background-color: var(--input) !important;
+.btn-slack-secondary {
+  background-color: var(--background);
+  color: var(--foreground);
   border: 1px solid var(--border);
 }
 
-.border-gray-300 {
-  border-color: var(--border) !important;
+.btn-slack-secondary:hover {
+  background-color: var(--hover-background);
 }
