@@ -138,8 +138,8 @@ export default function Home() {
             <p className="text-lg text-slack-secondary">Track your expenses with manual entries and photo uploads</p>
           </header>
 
-          <div className="bg-white rounded-lg shadow-sm border border-slack mb-6">
-            <div className="border-b">
+          <div className="bg-white rounded-lg shadow-sm border border-[#e1e1e1] mb-6">
+            <div className="border-b border-[#e1e1e1]">
               <nav className="flex space-x-8 px-6">
                 {tabs.map((tab) => (
                   <button

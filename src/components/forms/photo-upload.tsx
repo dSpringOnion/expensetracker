@@ -81,9 +81,9 @@ export function PhotoUpload({ onUpload, onExtractedData, className }: PhotoUploa
   return (
     <div className={cn('space-y-4', className)}>
       <div className="space-y-2">
-        <Label>Upload Receipt Photo</Label>
+        <Label className="text-[#1d1c1d] font-semibold">Upload Receipt Photo</Label>
         <div
-          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
+          className="border-2 border-dashed border-[#d1d1d1] rounded-lg p-6 text-center hover:border-[#007a5a] transition-colors bg-[#f8f8f8]"
           onDrop={handleDrop}
           onDragOver={handleDragOver}
         >
@@ -107,32 +107,32 @@ export function PhotoUpload({ onUpload, onExtractedData, className }: PhotoUploa
                 </Button>
               </div>
               {isUploading && (
-                <p className="text-sm text-gray-600">Processing image...</p>
+                <p className="text-sm text-[#1d1c1d] font-medium">Processing image...</p>
               )}
               {extractedData && (
-                <div className="text-left bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Extracted Data:</h4>
-                  <ul className="text-sm space-y-1">
-                    <li><strong>Title:</strong> {extractedData.title}</li>
-                    <li><strong>Amount:</strong> ${extractedData.amount}</li>
-                    <li><strong>Category:</strong> {extractedData.category}</li>
-                    <li><strong>Date:</strong> {extractedData.date}</li>
+                <div className="text-left bg-white border border-[#e1e1e1] p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2 text-[#1d1c1d]">Extracted Data:</h4>
+                  <ul className="text-sm space-y-1 text-[#1d1c1d]">
+                    <li><strong className="text-[#1d1c1d]">Title:</strong> {extractedData.title}</li>
+                    <li><strong className="text-[#1d1c1d]">Amount:</strong> ${extractedData.amount}</li>
+                    <li><strong className="text-[#1d1c1d]">Category:</strong> {extractedData.category}</li>
+                    <li><strong className="text-[#1d1c1d]">Date:</strong> {extractedData.date}</li>
                   </ul>
                 </div>
               )}
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex justify-center">
                 <div className="flex space-x-2">
-                  <Upload className="h-8 w-8 text-gray-400" />
-                  <Camera className="h-8 w-8 text-gray-400" />
+                  <Upload className="h-8 w-8 text-[#007a5a]" />
+                  <Camera className="h-8 w-8 text-[#007a5a]" />
                 </div>
               </div>
-              <p className="text-gray-600">
+              <p className="text-[#1d1c1d] font-medium">
                 Drop your receipt image here, or click to select
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-[#616061]">
                 PNG, JPG, GIF up to 10MB
               </p>
             </div>

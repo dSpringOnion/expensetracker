@@ -62,10 +62,10 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
-      className={cn('space-y-4', className)}
+      className={cn('space-y-6', className)}
     >
-      <div>
-        <Label htmlFor="title">Title</Label>
+      <div className="space-y-2">
+        <Label htmlFor="title">Title *</Label>
         <Input
           id="title"
           {...register('title')}
@@ -77,8 +77,8 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
         )}
       </div>
 
-      <div>
-        <Label htmlFor="amount">Amount</Label>
+      <div className="space-y-2">
+        <Label htmlFor="amount">Amount *</Label>
         <Input
           id="amount"
           type="number"
@@ -92,8 +92,8 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
         )}
       </div>
 
-      <div>
-        <Label htmlFor="category">Category</Label>
+      <div className="space-y-2">
+        <Label htmlFor="category">Category *</Label>
         <Select
           id="category"
           {...register('category')}
@@ -111,8 +111,8 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
         )}
       </div>
 
-      <div>
-        <Label htmlFor="date">Date</Label>
+      <div className="space-y-2">
+        <Label htmlFor="date">Date *</Label>
         <Input
           id="date"
           type="date"
@@ -124,12 +124,12 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
         )}
       </div>
 
-      <div>
-        <Label htmlFor="description">Description (Optional)</Label>
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
           {...register('description')}
-          placeholder="Enter expense description"
+          placeholder="Enter expense description (optional)"
           rows={3}
         />
       </div>
