@@ -14,7 +14,8 @@
     "db:migrate-from-sqlite": "node scripts/migrate-from-sqlite.js",
     "db:seed": "node scripts/seed-database.js",
     "db:reset": "prisma migrate reset",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "railway:connect": "node scripts/railway-connect.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
