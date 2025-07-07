@@ -28,8 +28,9 @@ A full-stack expense tracking application built with Next.js, TypeScript, Tailwi
 
 - Node.js 18+ 
 - npm or yarn
+- PostgreSQL database (see setup options below)
 
-### Installation
+### Quick Setup
 
 1. Clone the repository
 2. Install dependencies:
@@ -37,26 +38,63 @@ A full-stack expense tracking application built with Next.js, TypeScript, Tailwi
    npm install
    ```
 
-3. Set up the database:
+3. **Set up permanent database** (choose one option):
+
+   **🆓 Option A: Neon (Recommended - Free tier)**
    ```bash
-   npm run db:migrate
+   # 1. Go to https://neon.tech and create a project
+   # 2. Copy your connection string
+   # 3. Create .env file:
+   echo 'DATABASE_URL="your-neon-connection-string"' > .env
+   echo 'NEXTAUTH_URL="http://localhost:3000"' >> .env
+   echo 'NEXTAUTH_SECRET="your-random-secret"' >> .env
    ```
 
-4. Start the development server:
+   **🆓 Option B: Supabase (Free tier)**
+   ```bash
+   # 1. Go to https://supabase.com and create a project
+   # 2. Get connection string from Settings > Database
+   # 3. Create .env file with your connection string
+   ```
+
+   **🔧 Option C: Local PostgreSQL**
+   ```bash
+   # If you have PostgreSQL installed locally
+   createdb expensetracker
+   echo 'DATABASE_URL="postgresql://postgres:password@localhost:5432/expensetracker"' > .env
+   ```
+
+4. Set up database tables:
+   ```bash
+   npm run db:push
+   ```
+
+5. Start the development server:
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ### Environment Variables
 
-Create a `.env` file in the root directory:
+Copy `.env.example` to `.env` and update the values:
 
 ```env
-DATABASE_URL="file:./dev.db"
+# Required: PostgreSQL connection string
+DATABASE_URL="postgresql://username:password@host:port/database_name"
+
+# Required for authentication
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
+```
+
+### Migrating from SQLite (if applicable)
+
+If you were using the SQLite version and want to migrate your data:
+
+```bash
+npm run db:migrate-from-sqlite
 ```
 
 ## Project Structure

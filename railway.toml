@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "npm run start"
+startCommand = "npm run db:deploy && npm run start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
@@ -20,3 +20,13 @@ path = "/api/health"
 interval = 30
 timeout = 10
 retries = 3
+
+# PostgreSQL service configuration
+[[services]]
+name = "postgres"
+source = "postgres"
+
+[services.variables]
+POSTGRES_DB = "expensetracker"
+POSTGRES_USER = "postgres"
+POSTGRES_PASSWORD = "${{POSTGRES_PASSWORD}}"
