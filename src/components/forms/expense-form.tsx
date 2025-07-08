@@ -109,9 +109,13 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       if (response.ok) {
         const data = await response.json()
         setBusinesses(data)
+      } else {
+        console.error('Failed to fetch businesses: HTTP', response.status)
+        setBusinesses([]) // Set empty array as fallback
       }
     } catch (error) {
       console.error('Failed to fetch businesses:', error)
+      setBusinesses([]) // Set empty array as fallback
     }
   }
 
@@ -121,9 +125,13 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       if (response.ok) {
         const data = await response.json()
         setLocations(data)
+      } else {
+        console.error('Failed to fetch locations: HTTP', response.status)
+        setLocations([]) // Set empty array as fallback
       }
     } catch (error) {
       console.error('Failed to fetch locations:', error)
+      setLocations([]) // Set empty array as fallback
     }
   }
 

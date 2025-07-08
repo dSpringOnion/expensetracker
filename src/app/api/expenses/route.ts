@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
+import { auth } from '@/auth'
 
 const prisma = new PrismaClient()
 
@@ -56,9 +57,16 @@ export async function POST(request: NextRequest) {
     const expenseData = JSON.parse(jsonData)
     const validatedData = createExpenseSchema.parse(expenseData)
     
-    // For now, use a hardcoded user ID
-    // In production, this would come from authentication
-    const userId = 'user_1'
+    // Get authenticated user
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
+    const userId = session.user.id
     
     const expense = await prisma.expense.create({
       data: {
@@ -92,15 +100,23 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Get authenticated user
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
+    const userId = session.user.id
+    
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
     const businessId = searchParams.get('businessId')
     const locationId = searchParams.get('locationId')
     const approvalStatus = searchParams.get('approvalStatus')
     const limit = searchParams.get('limit')
-    
-    // For now, use a hardcoded user ID
-    const userId = 'user_1'
     
     const expenses = await prisma.expense.findMany({
       where: {
