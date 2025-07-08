@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { ExpenseForm } from '@/components/forms/expense-form'
-import { PhotoUpload } from '@/components/forms/photo-upload'
 import { ExpenseList } from '@/components/dashboard/expense-list'
 import { ExpenseStats } from '@/components/dashboard/expense-stats'
 import { ExpenseFilters as ExpenseFiltersComponent } from '@/components/dashboard/expense-filters'
 import { Expense, ExpenseFilters } from '@/types'
-import { Plus, Receipt, BarChart3 } from 'lucide-react'
+import { Plus, BarChart3 } from 'lucide-react'
 
 export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([])
-  const [activeTab, setActiveTab] = useState<'add' | 'photo' | 'list'>('add')
+  const [activeTab, setActiveTab] = useState<'add' | 'list'>('add')
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -68,27 +67,6 @@ export default function Home() {
     }
   }
 
-  const handlePhotoUpload = async (file: File) => {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to upload photo')
-      }
-
-      const data = await response.json()
-      return data
-    } catch (error) {
-      console.error('Failed to upload photo:', error)
-      throw error
-    }
-  }
 
   const handleFilterChange = (filters: ExpenseFilters) => {
     let filtered = [...expenses]
@@ -122,7 +100,6 @@ export default function Home() {
 
   const tabs = [
     { id: 'add', label: 'Add Expense', icon: Plus },
-    { id: 'photo', label: 'Photo Upload', icon: Receipt },
     { id: 'list', label: 'View Expenses', icon: BarChart3 },
   ]
 
@@ -161,7 +138,7 @@ export default function Home() {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as 'add' | 'photo' | 'list')}
+                    onClick={() => setActiveTab(tab.id as 'add' | 'list')}
                     className={`py-4 px-6 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
                       activeTab === tab.id
                         ? 'border-emerald-500 text-emerald-600 bg-emerald-50/50'
@@ -183,19 +160,6 @@ export default function Home() {
                 </div>
               )}
 
-              {activeTab === 'photo' && (
-                <div className="max-w-md mx-auto">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-8">Upload Receipt Photo</h2>
-                  <PhotoUpload
-                    onUpload={handlePhotoUpload}
-                    onExtractedData={() => {
-                      // Pre-fill form with extracted data
-                      setActiveTab('add')
-                      // You could implement form pre-filling here
-                    }}
-                  />
-                </div>
-              )}
 
               {activeTab === 'list' && (
                 <div>

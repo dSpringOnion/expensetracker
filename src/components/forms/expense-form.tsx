@@ -44,6 +44,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
   const [selectedLocation, setSelectedLocation] = useState<{id: string, label: string} | undefined>()
   const [selectedCategories, setSelectedCategories] = useState<{id: string, label: string}[]>([])
   const [receiptFile, setReceiptFile] = useState<File | undefined>()
+  const [useReceiptMode, setUseReceiptMode] = useState(false)
   
   const {
     register,
@@ -135,6 +136,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       setSelectedLocation(undefined)
       setSelectedCategories([])
       setReceiptFile(undefined)
+      setUseReceiptMode(false)
     } catch (error) {
       console.error('Failed to submit expense:', error)
     } finally {
@@ -147,142 +149,261 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       onSubmit={handleSubmit(handleFormSubmit)}
       className={cn('space-y-6', className)}
     >
-      <div className="space-y-2">
-        <Label htmlFor="title">Title *</Label>
-        <Input
-          id="title"
-          {...register('title')}
-          placeholder="Enter expense title"
-          className={errors.title ? 'border-red-500' : ''}
-        />
-        {errors.title && (
-          <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
-        )}
+      {/* Receipt Mode Toggle */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Do you have a receipt?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              We can extract the amount, vendor, and date automatically from your receipt image!
+            </p>
+            <button
+              type="button"
+              onClick={() => setUseReceiptMode(!useReceiptMode)}
+              className={cn(
+                "inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200",
+                useReceiptMode
+                  ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
+                  : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+              )}
+            >
+              {useReceiptMode ? (
+                <>
+                  ✓ Using receipt mode
+                </>
+              ) : (
+                <>
+                  📸 Yes, use my receipt
+                </>
+              )}
+            </button>
+            {useReceiptMode && (
+              <button
+                type="button"
+                onClick={() => setUseReceiptMode(false)}
+                className="ml-3 text-sm text-gray-500 hover:text-gray-700 underline"
+              >
+                Switch to manual entry
+              </button>
+            )}
+          </div>
+        </div>
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="amount">Amount *</Label>
-        <Input
-          id="amount"
-          type="number"
-          step="0.01"
-          {...register('amount')}
-          placeholder="0.00"
-          className={errors.amount ? 'border-red-500' : ''}
-        />
-        {errors.amount && (
-          <p className="text-sm text-red-500 mt-1">{errors.amount.message}</p>
-        )}
-      </div>
-
-      {/* Business Selection */}
-      <TagSelector
-        label="Business"
-        tags={businesses.map(b => ({ id: b.id, label: b.name }))}
-        selectedTag={selectedBusiness}
-        onTagSelect={(tag) => {
-          if (tag.id && tag.label) {
-            setSelectedBusiness(tag)
-          } else {
-            setSelectedBusiness(undefined)
-          }
-        }}
-        placeholder="Select a business (optional)"
-        showAddButton={true}
-        onAddTag={() => alert('Add new business functionality coming soon!')}
-      />
-
-      {/* Location Selection */}
-      {selectedBusiness && (
-        <TagSelector
-          label="Location"
-          tags={locations.map(l => ({ id: l.id, label: l.name }))}
-          selectedTag={selectedLocation}
-          onTagSelect={(tag) => {
-            if (tag.id && tag.label) {
-              setSelectedLocation(tag)
-            } else {
-              setSelectedLocation(undefined)
-            }
-          }}
-          placeholder="Select a location (optional)"
-          showAddButton={true}
-          onAddTag={() => alert('Add new location functionality coming soon!')}
-        />
+      {/* Receipt Upload - Show first in receipt mode */}
+      {useReceiptMode && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 className="font-semibold text-yellow-900 mb-3">📸 Upload Your Receipt</h4>
+          <FileUpload
+            label=""
+            description="Upload receipt image - we'll extract amount, vendor, and date automatically"
+            onFileSelect={setReceiptFile}
+            onOCRComplete={(extractedData) => {
+              // Pre-fill form with extracted data
+              if (extractedData.amount) setValue('amount', extractedData.amount)
+              if (extractedData.vendor) setValue('vendorName', extractedData.vendor)
+              if (extractedData.date) setValue('date', extractedData.date)
+            }}
+            acceptedTypes="image/*"
+            maxSize={10}
+            onRemove={() => setReceiptFile(undefined)}
+          />
+        </div>
       )}
 
+      {/* Business Context - Always Required */}
+      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+        <h4 className="font-semibold text-emerald-900 mb-3">🏢 Business Context</h4>
+        <div className="space-y-4">
+          {/* Business Selection */}
+          <TagSelector
+            label="Business"
+            tags={businesses.map(b => ({ id: b.id, label: b.name }))}
+            selectedTag={selectedBusiness}
+            onTagSelect={(tag) => {
+              if (tag.id && tag.label) {
+                setSelectedBusiness(tag)
+              } else {
+                setSelectedBusiness(undefined)
+              }
+            }}
+            placeholder="Select a business (optional)"
+            showAddButton={true}
+            onAddTag={() => alert('Add new business functionality coming soon!')}
+          />
+
+          {/* Location Selection */}
+          {selectedBusiness && (
+            <TagSelector
+              label="Location"
+              tags={locations.map(l => ({ id: l.id, label: l.name }))}
+              selectedTag={selectedLocation}
+              onTagSelect={(tag) => {
+                if (tag.id && tag.label) {
+                  setSelectedLocation(tag)
+                } else {
+                  setSelectedLocation(undefined)
+                }
+              }}
+              placeholder="Select a location (optional)"
+              showAddButton={true}
+              onAddTag={() => alert('Add new location functionality coming soon!')}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Expense Details */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h4 className="font-semibold text-gray-900 mb-3">💰 Expense Details</h4>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Purpose/Reason *</Label>
+            <Input
+              id="title"
+              {...register('title')}
+              placeholder={useReceiptMode ? "What was this expense for? (e.g., Team lunch, Office supplies)" : "Enter expense title"}
+              className={errors.title ? 'border-red-500' : ''}
+            />
+            {errors.title && (
+              <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+            )}
+            {useReceiptMode && (
+              <p className="text-xs text-gray-600">
+                💡 We extracted vendor info from your receipt - please tell us the business purpose
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="amount">Amount *</Label>
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              {...register('amount')}
+              placeholder="0.00"
+              className={errors.amount ? 'border-red-500' : ''}
+            />
+            {errors.amount && (
+              <p className="text-sm text-red-500 mt-1">{errors.amount.message}</p>
+            )}
+            {useReceiptMode && (
+              <p className="text-xs text-gray-600">
+                💡 Amount was extracted from receipt - please verify it's correct
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Category Selection */}
-      <MultiTagSelector
-        label="Categories *"
-        tags={EXPENSE_CATEGORIES.map(c => ({ id: c, label: c }))}
-        selectedTags={selectedCategories}
-        onTagsChange={(tags) => {
-          // Filter out empty tags from the clear function
-          const validTags = tags.filter(tag => tag.id && tag.label)
-          setSelectedCategories(validTags)
-        }}
-        placeholder="Select expense categories"
-        error={errors.category?.message}
-        maxTags={3}
-        showAddButton={true}
-        onAddTag={() => alert('Add new category functionality coming soon!')}
-      />
-
-      <div className="space-y-2">
-        <Label htmlFor="date">Date *</Label>
-        <Input
-          id="date"
-          type="date"
-          {...register('date')}
-          className={errors.date ? 'border-red-500' : ''}
+      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+        <h4 className="font-semibold text-purple-900 mb-3">🏷️ Categories</h4>
+        <MultiTagSelector
+          label=""
+          tags={EXPENSE_CATEGORIES.map(c => ({ id: c, label: c }))}
+          selectedTags={selectedCategories}
+          onTagsChange={(tags) => {
+            // Filter out empty tags from the clear function
+            const validTags = tags.filter(tag => tag.id && tag.label)
+            setSelectedCategories(validTags)
+          }}
+          placeholder="Select expense categories"
+          error={errors.category?.message}
+          maxTags={3}
+          showAddButton={true}
+          onAddTag={() => alert('Add new category functionality coming soon!')}
         />
-        {errors.date && (
-          <p className="text-sm text-red-500 mt-1">{errors.date.message}</p>
-        )}
+        <p className="text-xs text-purple-600 mt-2">
+          💡 Select up to 3 categories that best describe this expense
+        </p>
       </div>
 
-      {/* Vendor Name */}
-      <div className="space-y-2">
-        <Label htmlFor="vendorName">Vendor/Supplier</Label>
-        <Input
-          id="vendorName"
-          {...register('vendorName')}
-          placeholder="Enter vendor or supplier name (optional)"
-        />
+      {/* Additional Details */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h4 className="font-semibold text-gray-900 mb-3">📝 Additional Details</h4>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="date">Date *</Label>
+            <Input
+              id="date"
+              type="date"
+              {...register('date')}
+              className={errors.date ? 'border-red-500' : ''}
+            />
+            {errors.date && (
+              <p className="text-sm text-red-500 mt-1">{errors.date.message}</p>
+            )}
+            {useReceiptMode && (
+              <p className="text-xs text-gray-600">
+                💡 Date was extracted from receipt - please verify it's correct
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="vendorName">Vendor/Supplier</Label>
+            <Input
+              id="vendorName"
+              {...register('vendorName')}
+              placeholder={useReceiptMode ? "Vendor extracted from receipt" : "Enter vendor or supplier name (optional)"}
+              className={useReceiptMode ? 'bg-blue-50' : ''}
+            />
+            {useReceiptMode && (
+              <p className="text-xs text-gray-600">
+                💡 Vendor was extracted from receipt - you can edit if needed
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="expenseCode">Expense Code</Label>
+              <Input
+                id="expenseCode"
+                {...register('expenseCode')}
+                placeholder="Enter expense code (optional)"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2 pt-6">
+              <input
+                type="checkbox"
+                id="taxDeductible"
+                {...register('taxDeductible')}
+                className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <Label htmlFor="taxDeductible" className="text-sm font-medium text-gray-900">
+                Tax deductible expense
+              </Label>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Expense Code */}
-      <div className="space-y-2">
-        <Label htmlFor="expenseCode">Expense Code</Label>
-        <Input
-          id="expenseCode"
-          {...register('expenseCode')}
-          placeholder="Enter expense code (optional)"
-        />
-      </div>
-
-      {/* Tax Deductible */}
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="taxDeductible"
-          {...register('taxDeductible')}
-          className="rounded border-[#d1d1d1] text-[#007a5a] focus:ring-[#007a5a]"
-        />
-        <Label htmlFor="taxDeductible" className="text-sm font-medium text-[#1d1c1d]">
-          Tax deductible expense
-        </Label>
-      </div>
-
-      {/* Receipt Upload */}
-      <FileUpload
-        label="Receipt"
-        description="Upload receipt image or PDF (optional)"
-        onFileSelect={setReceiptFile}
-        acceptedTypes="image/*,.pdf"
-        maxSize={10}
-        onRemove={() => setReceiptFile(undefined)}
-      />
+      {/* Receipt Upload for Manual Mode */}
+      {!useReceiptMode && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-semibold text-blue-900 mb-3">📎 Receipt (Optional)</h4>
+          <FileUpload
+            label=""
+            description="Upload receipt image for your records (optional)"
+            onFileSelect={setReceiptFile}
+            acceptedTypes="image/*,.pdf"
+            maxSize={10}
+            onRemove={() => setReceiptFile(undefined)}
+          />
+        </div>
+      )}
 
       {/* Description */}
       <div className="space-y-2">

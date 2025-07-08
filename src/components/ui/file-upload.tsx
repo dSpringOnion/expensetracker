@@ -3,11 +3,19 @@
 import { useState, useCallback } from 'react'
 import { Button } from './button'
 import { Label } from './label'
-import { Upload, X, FileText, Image } from 'lucide-react'
+import { Upload, X, FileText, Image, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Tesseract from 'tesseract.js'
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void
+  onOCRComplete?: (extractedData: {
+    title?: string
+    amount?: number
+    vendor?: string
+    date?: string
+    description?: string
+  }) => void
   acceptedTypes?: string
   maxSize?: number // in MB
   label?: string
@@ -21,6 +29,7 @@ interface FileUploadProps {
 
 export function FileUpload({
   onFileSelect,
+  onOCRComplete,
   acceptedTypes = "image/*",
   maxSize = 10,
   label,
@@ -33,6 +42,97 @@ export function FileUpload({
 }: FileUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentFile || null)
+  const [isProcessingOCR, setIsProcessingOCR] = useState(false)
+  const [ocrProgress, setOcrProgress] = useState(0)
+  const [extractedData, setExtractedData] = useState<{
+    title?: string
+    amount?: number
+    vendor?: string
+    date?: string
+    description?: string
+  } | null>(null)
+
+  const performOCR = useCallback(async (file: File) => {
+    if (!file.type.startsWith('image/') || !onOCRComplete) return
+
+    setIsProcessingOCR(true)
+    setOcrProgress(0)
+
+    try {
+      const result = await Tesseract.recognize(file, 'eng', {
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            setOcrProgress(Math.round(m.progress * 100))
+          }
+        }
+      })
+
+      const text = result.data.text
+      console.log('OCR Text:', text)
+
+      // Simple text parsing for receipt data
+      const extractedData = parseReceiptText(text)
+      setExtractedData(extractedData)
+      onOCRComplete(extractedData)
+
+    } catch (error) {
+      console.error('OCR Error:', error)
+    } finally {
+      setIsProcessingOCR(false)
+      setOcrProgress(0)
+    }
+  }, [onOCRComplete])
+
+  const parseReceiptText = (text: string) => {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0)
+    
+    let title = ''
+    let amount = 0
+    let vendor = ''
+    let date = ''
+    
+    // Look for vendor name (usually first few lines)
+    const vendorLine = lines.find(line => 
+      line.length > 3 && 
+      !line.match(/^\d/) && 
+      !line.toLowerCase().includes('receipt') &&
+      !line.toLowerCase().includes('total')
+    )
+    if (vendorLine) {
+      vendor = vendorLine
+      title = `${vendorLine} Receipt`
+    }
+
+    // Look for amounts ($ followed by numbers)
+    const amountMatches = text.match(/\$?\s*(\d+\.?\d*)/g)
+    if (amountMatches) {
+      const amounts = amountMatches
+        .map(match => parseFloat(match.replace(/[$\s]/g, '')))
+        .filter(num => num > 0 && num < 10000)
+      
+      if (amounts.length > 0) {
+        amount = Math.max(...amounts) // Usually the total is the largest amount
+      }
+    }
+
+    // Look for dates
+    const dateMatch = text.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/g)
+    if (dateMatch) {
+      const dateStr = dateMatch[0]
+      const parsedDate = new Date(dateStr)
+      if (!isNaN(parsedDate.getTime())) {
+        date = parsedDate.toISOString().split('T')[0]
+      }
+    }
+
+    return {
+      title: title || 'Receipt',
+      amount: amount || undefined,
+      vendor: vendor || undefined,
+      date: date || undefined,
+      description: 'Extracted from receipt via OCR'
+    }
+  }
 
   const handleFileSelect = useCallback((file: File) => {
     // Validate file size
@@ -48,7 +148,12 @@ export function FileUpload({
     }
 
     onFileSelect(file)
-  }, [onFileSelect, maxSize, showPreview])
+
+    // Perform OCR if it's an image and callback is provided
+    if (file.type.startsWith('image/') && onOCRComplete) {
+      performOCR(file)
+    }
+  }, [onFileSelect, maxSize, showPreview, onOCRComplete, performOCR])
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -131,6 +236,49 @@ export function FileUpload({
               </Button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* OCR Processing */}
+      {isProcessingOCR && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <Eye className="h-5 w-5 text-blue-600 animate-pulse" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900">Reading receipt text...</p>
+              <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${ocrProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-blue-700 mt-1">{ocrProgress}% complete</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Extracted Data Display */}
+      {extractedData && !isProcessingOCR && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Text Extracted from Receipt:
+          </h4>
+          <div className="space-y-1 text-sm text-green-800">
+            {extractedData.vendor && (
+              <p><strong>Vendor:</strong> {extractedData.vendor}</p>
+            )}
+            {extractedData.amount && (
+              <p><strong>Amount:</strong> ${extractedData.amount}</p>
+            )}
+            {extractedData.date && (
+              <p><strong>Date:</strong> {extractedData.date}</p>
+            )}
+            <p className="text-xs text-green-600 mt-2">
+              This data has been pre-filled in the form below
+            </p>
+          </div>
         </div>
       )}
 
