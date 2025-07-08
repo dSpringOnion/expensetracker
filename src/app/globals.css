@@ -5,9 +5,9 @@
   --background: #ffffff;
   --sidebar-background: #3f0f40;
   --panel-background: #f8f8f8;
-  --foreground: #1d1c1d;
-  --muted-foreground: #616061;
-  --light-foreground: #868686;
+  --foreground: #000000;
+  --muted-foreground: #2c2c2c;
+  --light-foreground: #4a4a4a;
   --primary: #007a5a;
   --primary-hover: #006644;
   --accent: #1264a3;

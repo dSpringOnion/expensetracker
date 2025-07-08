@@ -68,12 +68,12 @@ export function MultiTagSelector({
     <div className={cn('space-y-2', className)}>
       {label && (
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-[#1d1c1d]">{label}</label>
+          <label className="text-sm font-semibold text-gray-900">{label}</label>
           {selectedTags.length > 0 && (
             <button
               type="button"
               onClick={clearAllSelections}
-              className="text-xs text-[#616061] hover:text-[#007a5a] transition-colors"
+              className="text-xs text-gray-600 hover:text-emerald-600 transition-colors font-medium"
             >
               Clear all
             </button>
@@ -83,11 +83,11 @@ export function MultiTagSelector({
       
       {/* Selected Tags Display */}
       {selectedTags.length > 0 && (
-        <div className="flex flex-wrap gap-2 p-3 border border-[#d1d1d1] rounded-md bg-white min-h-[46px]">
+        <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-lg bg-white min-h-[46px] shadow-sm">
           {selectedTags.map((tag) => (
             <span 
               key={tag.id}
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#007a5a] text-white"
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-500 text-white shadow-sm"
             >
               {tag.label}
               <button
@@ -103,7 +103,7 @@ export function MultiTagSelector({
             <button
               type="button"
               onClick={() => setIsExpanded(true)}
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#f8f8f8] text-[#007a5a] border border-[#007a5a]/20 hover:bg-[#e8f5e8] transition-colors"
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-50 transition-all duration-200 shadow-sm"
             >
               <Plus className="h-3 w-3 mr-1" />
               Add category
@@ -122,8 +122,8 @@ export function MultiTagSelector({
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsExpanded(true)}
             className={cn(
-              "w-full p-3 border border-[#d1d1d1] rounded-md focus:outline-none focus:ring-2 focus:ring-[#007a5a] focus:border-transparent",
-              error && "border-red-500"
+              "w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-sm transition-all duration-200 text-gray-900",
+              error && "border-red-300 focus:ring-red-500"
             )}
           />
         </div>
@@ -139,7 +139,7 @@ export function MultiTagSelector({
         <div className="space-y-3">
           {selectedTags.length < maxTags && (
             <div className="flex flex-wrap gap-2">
-              <span className="text-xs text-[#616061] self-center">
+              <span className="text-xs text-gray-600 font-medium self-center">
                 {selectedTags.length === 0 ? 'Quick select:' : 'Add more:'}
               </span>
               {(searchTerm ? filteredTags : filteredTags)
@@ -150,7 +150,7 @@ export function MultiTagSelector({
                     type="button"
                     onClick={() => handleTagAdd(tag)}
                     disabled={selectedTags.length >= maxTags}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#f8f8f8] text-[#1d1c1d] border border-[#d1d1d1] hover:bg-[#e8f5e8] hover:border-[#007a5a]/20 hover:text-[#007a5a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {tag.label}
                   </button>
@@ -165,7 +165,7 @@ export function MultiTagSelector({
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="inline-flex items-center px-3 py-1 text-sm font-medium text-[#007a5a] hover:text-[#005a42] transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all duration-200"
               >
                 {isExpanded ? (
                   <>Show Less</>
@@ -196,7 +196,7 @@ export function MultiTagSelector({
 
       {/* Selected count indicator */}
       {selectedTags.length > 0 && (
-        <div className="text-xs text-[#616061]">
+        <div className="text-xs text-gray-600 font-medium">
           {selectedTags.length} of {maxTags} categories selected
         </div>
       )}

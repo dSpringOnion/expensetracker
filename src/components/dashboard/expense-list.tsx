@@ -15,7 +15,7 @@ interface ExpenseListProps {
 export function ExpenseList({ expenses, onDelete, className }: ExpenseListProps) {
   if (expenses.length === 0) {
     return (
-      <div className="text-center py-12 text-slack-secondary">
+      <div className="text-center py-12 text-gray-600">
         <Receipt className="h-16 w-16 mx-auto mb-4 text-slack-light" />
         <p className="text-lg font-medium mb-2 text-slack-primary">No expenses found</p>
         <p className="text-slack-light">Start by adding your first expense!</p>
@@ -29,30 +29,30 @@ export function ExpenseList({ expenses, onDelete, className }: ExpenseListProps)
         {expenses.map((expense) => (
           <div
             key={expense.id}
-            className="bg-white rounded-lg border border-slack p-4 shadow-sm hover:shadow-md hover:bg-slack-hover transition-all"
+            className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm hover:shadow-lg hover:bg-gray-50/50 transition-all duration-200"
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-slack-primary">{expense.title}</h3>
-                  <span className="text-lg font-bold text-[#007a5a]">
+                  <h3 className="font-bold text-gray-900 text-lg">{expense.title}</h3>
+                  <span className="text-xl font-bold text-emerald-600">
                     {formatCurrency(expense.amount)}
                   </span>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 text-sm text-slack-secondary mb-2">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-2">
                   {/* Display multiple categories if available, otherwise single category */}
                   {expense.categories && expense.categories.length > 0 ? (
                     expense.categories.map((cat, index) => (
-                      <span key={index} className="bg-[#f8f8f8] text-slack-primary px-3 py-1 rounded-full font-medium border border-slack">
+                      <span key={index} className="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 px-3 py-1.5 rounded-full font-semibold border border-gray-200 shadow-sm">
                         {cat}
                       </span>
                     ))
                   ) : (
-                    <span className="bg-[#f8f8f8] text-slack-primary px-3 py-1 rounded-full font-medium border border-slack">
+                    <span className="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 px-3 py-1.5 rounded-full font-semibold border border-gray-200 shadow-sm">
                       {expense.category}
                     </span>
                   )}
-                  <span>{formatDate(new Date(expense.date))}</span>
+                  <span className="text-gray-600 font-medium">{formatDate(new Date(expense.date))}</span>
                   
                   {/* Approval Status */}
                   <div className="flex items-center gap-1">
@@ -79,7 +79,7 @@ export function ExpenseList({ expenses, onDelete, className }: ExpenseListProps)
                 
                 {/* Business and Location Info */}
                 {(expense.businessId || expense.locationId) && (
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slack-secondary mb-2">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 mb-2">
                     {expense.businessId && (
                       <span className="flex items-center gap-1">
                         <Building className="h-3 w-3" />
@@ -97,7 +97,7 @@ export function ExpenseList({ expenses, onDelete, className }: ExpenseListProps)
                 
                 {/* Additional Details */}
                 {(expense.vendorName || expense.expenseCode) && (
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slack-secondary mb-2">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 mb-2">
                     {expense.vendorName && (
                       <span><strong>Vendor:</strong> {expense.vendorName}</span>
                     )}
@@ -112,7 +112,7 @@ export function ExpenseList({ expenses, onDelete, className }: ExpenseListProps)
                   </div>
                 )}
                 {expense.description && (
-                  <p className="text-sm text-slack-secondary mt-2">{expense.description}</p>
+                  <p className="text-sm text-gray-600 mt-2">{expense.description}</p>
                 )}
               </div>
               

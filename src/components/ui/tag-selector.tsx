@@ -56,15 +56,15 @@ export function TagSelector({
   return (
     <div className={cn('space-y-2', className)}>
       {label && (
-        <label className="text-sm font-medium text-[#1d1c1d]">{label}</label>
+        <label className="text-sm font-semibold text-gray-900">{label}</label>
       )}
       
       <div className="relative">
         {/* Selected Tag Display */}
         {selectedTag ? (
-          <div className="flex items-center gap-2 p-3 border border-[#d1d1d1] rounded-md bg-white">
+          <div className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg bg-white shadow-sm">
             <span 
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#007a5a] text-white"
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-500 text-white shadow-sm"
             >
               {selectedTag.label}
               <button
@@ -84,8 +84,8 @@ export function TagSelector({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={cn(
-                "w-full p-3 border border-[#d1d1d1] rounded-md focus:outline-none focus:ring-2 focus:ring-[#007a5a] focus:border-transparent",
-                error && "border-red-500"
+                "w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-sm transition-all duration-200 text-gray-900",
+                error && "border-red-300 focus:ring-red-500"
               )}
             />
           </div>
@@ -100,7 +100,7 @@ export function TagSelector({
       {!selectedTag && tags.length > 0 && (
         <div className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            <span className="text-xs text-[#616061] self-center">Quick select:</span>
+            <span className="text-xs text-gray-600 font-medium self-center">Quick select:</span>
             {(searchTerm ? filteredTags : tags)
               .slice(0, isExpanded ? undefined : 6)
               .map((tag) => (
@@ -108,7 +108,7 @@ export function TagSelector({
                   key={tag.id}
                   type="button"
                   onClick={() => handleTagClick(tag)}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#f8f8f8] text-[#1d1c1d] border border-[#d1d1d1] hover:bg-[#e8f5e8] hover:border-[#007a5a]/20 hover:text-[#007a5a] transition-colors"
+                  className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all duration-200 shadow-sm"
                 >
                   {tag.label}
                 </button>
@@ -122,7 +122,7 @@ export function TagSelector({
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="inline-flex items-center px-3 py-1 text-sm font-medium text-[#007a5a] hover:text-[#005a42] transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all duration-200"
               >
                 {isExpanded ? (
                   <>Show Less</>

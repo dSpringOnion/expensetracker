@@ -138,25 +138,34 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slack-panel">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <header className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-slack-primary mb-3">Expense Tracker</h1>
-            <p className="text-lg text-slack-secondary">Track your expenses with manual entries and photo uploads</p>
+          <header className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl mb-6 shadow-lg">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-4">
+              Expense Tracker
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Streamline your business expense management with intelligent categorization and multi-location support
+            </p>
           </header>
 
-          <div className="bg-white rounded-lg shadow-sm border border-[#e1e1e1] mb-6">
-            <div className="border-b border-[#e1e1e1]">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mb-6 overflow-hidden backdrop-blur-sm">
+            <div className="border-b border-gray-100 bg-gray-50/50">
               <nav className="flex space-x-8 px-6">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as 'add' | 'photo' | 'list')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+                    className={`py-4 px-6 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
                       activeTab === tab.id
-                        ? 'border-[#007a5a] text-[#007a5a]'
-                        : 'border-transparent text-slack-secondary hover:text-slack-primary'
+                        ? 'border-emerald-500 text-emerald-600 bg-emerald-50/50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     <tab.icon className="h-4 w-4" />
@@ -166,17 +175,17 @@ export default function Home() {
               </nav>
             </div>
 
-            <div className="p-6">
+            <div className="p-8">
               {activeTab === 'add' && (
                 <div className="max-w-md mx-auto">
-                  <h2 className="text-2xl font-semibold text-slack-primary mb-6">Add New Expense</h2>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8">Add New Expense</h2>
                   <ExpenseForm onSubmit={handleAddExpense} />
                 </div>
               )}
 
               {activeTab === 'photo' && (
                 <div className="max-w-md mx-auto">
-                  <h2 className="text-2xl font-semibold text-slack-primary mb-6">Upload Receipt Photo</h2>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8">Upload Receipt Photo</h2>
                   <PhotoUpload
                     onUpload={handlePhotoUpload}
                     onExtractedData={() => {
@@ -190,7 +199,7 @@ export default function Home() {
 
               {activeTab === 'list' && (
                 <div>
-                  <h2 className="text-2xl font-semibold text-slack-primary mb-6">Your Expenses</h2>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8">Your Expenses</h2>
                   
                   <ExpenseStats expenses={filteredExpenses} className="mb-6" />
                   
