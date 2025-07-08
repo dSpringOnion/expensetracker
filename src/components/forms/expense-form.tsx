@@ -390,20 +390,6 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
         </div>
       </div>
 
-      {/* Receipt Upload for Manual Mode */}
-      {!useReceiptMode && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-semibold text-blue-900 mb-3">📎 Receipt (Optional)</h4>
-          <FileUpload
-            label=""
-            description="Upload receipt image for your records (optional)"
-            onFileSelect={setReceiptFile}
-            acceptedTypes="image/*,.pdf"
-            maxSize={10}
-            onRemove={() => setReceiptFile(undefined)}
-          />
-        </div>
-      )}
 
       {/* Description */}
       <div className="space-y-2">
