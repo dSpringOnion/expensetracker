@@ -10,29 +10,87 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Organization {
+  id          String     @id @default(cuid())
+  name        String
+  taxId       String?
+  address     String?
+  settings    Json?
+  businesses  Business[]
+  users       User[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Business {
+  id             String      @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  businessType   String?
+  taxSettings    Json?
+  locations      Location[]
+  expenses       Expense[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([organizationId])
+}
+
+model Location {
+  id           String    @id @default(cuid())
+  businessId   String
+  business     Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name         String
+  address      String?
+  managerEmail String?
+  settings     Json?
+  expenses     Expense[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([businessId])
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  expenses  Expense[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String        @id @default(cuid())
+  email          String        @unique
+  name           String?
+  role           String        @default("employee")
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  expenses       Expense[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
 }
 
 model Expense {
-  id          String   @id @default(cuid())
-  title       String
-  amount      Float
-  category    String
-  description String?
-  date        DateTime
-  receiptUrl  String?
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String    @id @default(cuid())
+  title          String
+  amount         Float
+  category       String
+  description    String?
+  date           DateTime
+  receiptUrl     String?
+  expenseCode    String?
+  taxDeductible  Boolean   @default(true)
+  vendorName     String?
+  approvalStatus String    @default("pending")
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId     String?
+  business       Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  locationId     String?
+  location       Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([userId])
   @@index([category])
   @@index([date])
+  @@index([businessId])
+  @@index([locationId])
+  @@index([approvalStatus])
 }

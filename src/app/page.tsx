@@ -37,14 +37,22 @@ export default function Home() {
     }
   }
 
-  const handleAddExpense = async (data: { title: string; amount: number; category: string; description?: string; date: string }) => {
+  const handleAddExpense = async (data: { title: string; amount: number; category: string; description?: string; date: string; businessId?: string; locationId?: string; vendorName?: string; expenseCode?: string; taxDeductible?: boolean; receiptFile?: File }) => {
     try {
+      const formData = new FormData()
+      
+      // Add expense data as JSON
+      const { receiptFile, ...expenseData } = data
+      formData.append('data', JSON.stringify(expenseData))
+      
+      // Add receipt file if present
+      if (receiptFile) {
+        formData.append('receiptFile', receiptFile)
+      }
+
       const response = await fetch('/api/expenses', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        body: formData,
       })
 
       if (response.ok) {

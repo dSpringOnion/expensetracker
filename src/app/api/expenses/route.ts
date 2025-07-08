@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import { v4 as uuidv4 } from 'uuid'
+
+const prisma = new PrismaClient()
 
 const createExpenseSchema = z.object({
   title: z.string().min(1),
@@ -8,22 +13,62 @@ const createExpenseSchema = z.object({
   category: z.string().min(1),
   description: z.string().optional(),
   date: z.string().transform((str) => new Date(str)),
+  businessId: z.string().optional(),
+  locationId: z.string().optional(),
+  vendorName: z.string().optional(),
+  expenseCode: z.string().optional(),
+  taxDeductible: z.boolean().optional().default(true),
 })
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const validatedData = createExpenseSchema.parse(body)
+    const formData = await request.formData()
+    
+    // Extract file if present
+    const receiptFile = formData.get('receiptFile') as File | null
+    let receiptUrl: string | undefined
+    
+    if (receiptFile) {
+      // Create receipts directory if it doesn't exist
+      const receiptsDir = join(process.cwd(), 'public', 'receipts')
+      try {
+        await mkdir(receiptsDir, { recursive: true })
+      } catch {
+        // Directory might already exist
+      }
+      
+      // Generate unique filename
+      const fileExtension = receiptFile.name.split('.').pop() || 'bin'
+      const fileName = `${uuidv4()}.${fileExtension}`
+      const filePath = join(receiptsDir, fileName)
+      
+      // Save file
+      const bytes = await receiptFile.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      await writeFile(filePath, buffer)
+      
+      receiptUrl = `/receipts/${fileName}`
+    }
+    
+    // Parse JSON data from form
+    const jsonData = formData.get('data') as string
+    const expenseData = JSON.parse(jsonData)
+    const validatedData = createExpenseSchema.parse(expenseData)
     
     // For now, use a hardcoded user ID
     // In production, this would come from authentication
     const userId = 'user_1'
     
-    const expense = await db.expense.create({
+    const expense = await prisma.expense.create({
       data: {
         ...validatedData,
         userId,
+        receiptUrl,
       },
+      include: {
+        business: true,
+        location: true,
+      }
     })
     
     return NextResponse.json(expense, { status: 201 })
@@ -48,15 +93,32 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
+    const businessId = searchParams.get('businessId')
+    const locationId = searchParams.get('locationId')
+    const approvalStatus = searchParams.get('approvalStatus')
     const limit = searchParams.get('limit')
     
     // For now, use a hardcoded user ID
     const userId = 'user_1'
     
-    const expenses = await db.expense.findMany({
+    const expenses = await prisma.expense.findMany({
       where: {
         userId,
         ...(category && { category }),
+        ...(businessId && { businessId }),
+        ...(locationId && { locationId }),
+        ...(approvalStatus && { approvalStatus }),
+      },
+      include: {
+        business: true,
+        location: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        }
       },
       orderBy: {
         date: 'desc',
