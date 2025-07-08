@@ -1,16 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { LogIn } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 
-export default function SignIn() {
+export default function SignUp() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -20,21 +21,34 @@ export default function SignIn() {
     setIsLoading(true)
     setError('')
 
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      setIsLoading(false)
+      return
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      setIsLoading(false)
+      return
+    }
+
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
       })
 
-      if (result?.error) {
-        setError('Invalid email or password')
+      if (response.ok) {
+        router.push('/auth/signin?message=Account created successfully')
       } else {
-        router.push('/')
+        const data = await response.json()
+        setError(data.message || 'Failed to create account')
       }
     } catch (error) {
-      setError('An error occurred during sign in')
-      console.error('Sign in error:', error)
+      setError('An error occurred during signup')
+      console.error('Signup error:', error)
     } finally {
       setIsLoading(false)
     }
@@ -45,13 +59,13 @@ export default function SignIn() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl mb-6 shadow-lg">
-            <LogIn className="w-8 h-8 text-white" />
+            <UserPlus className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900">
-            Sign in to your account
+            Create your account
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Access your expense tracker
+            Join your organization&apos;s expense tracking
           </p>
         </div>
         
@@ -62,6 +76,19 @@ export default function SignIn() {
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
+            
+            <div>
+              <Label htmlFor="name">Full name</Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                required
+                disabled={isLoading}
+              />
+            </div>
             
             <div>
               <Label htmlFor="email">Email address</Label>
@@ -83,7 +110,20 @@ export default function SignIn() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="Create a password (min 6 characters)"
+                required
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
                 required
                 disabled={isLoading}
               />
@@ -94,19 +134,19 @@ export default function SignIn() {
               disabled={isLoading}
               className="w-full"
             >
-              <LogIn className="h-4 w-4 mr-2" />
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              <UserPlus className="h-4 w-4 mr-2" />
+              {isLoading ? 'Creating account...' : 'Create account'}
             </Button>
             
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                Don&apos;t have an account?{' '}
+                Already have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => router.push('/auth/signup')}
+                  onClick={() => router.push('/auth/signin')}
                   className="text-emerald-600 hover:text-emerald-500 font-medium"
                 >
-                  Sign up
+                  Sign in
                 </button>
               </p>
             </div>

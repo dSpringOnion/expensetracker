@@ -1,18 +1,31 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { ExpenseForm } from '@/components/forms/expense-form'
 import { ExpenseList } from '@/components/dashboard/expense-list'
 import { ExpenseStats } from '@/components/dashboard/expense-stats'
 import { ExpenseFilters as ExpenseFiltersComponent } from '@/components/dashboard/expense-filters'
 import { Expense, ExpenseFilters } from '@/types'
-import { Plus, BarChart3 } from 'lucide-react'
+import { Plus, BarChart3, LogOut, User } from 'lucide-react'
 
 export default function Home() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([])
   const [activeTab, setActiveTab] = useState<'add' | 'list'>('add')
   const [isLoading, setIsLoading] = useState(true)
+
+  // Redirect to signin if not authenticated
+  useEffect(() => {
+    if (status === 'loading') return // Still loading
+    if (!session) {
+      router.push('/auth/signin')
+      return
+    }
+  }, [session, status, router])
 
   useEffect(() => {
     fetchExpenses()
@@ -103,12 +116,23 @@ export default function Home() {
     { id: 'list', label: 'View Expenses', icon: BarChart3 },
   ]
 
+  if (status === 'loading' || !session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slack-panel">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007a5a] mx-auto mb-4"></div>
-          <p className="text-slack-secondary">Loading expenses...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading expenses...</p>
         </div>
       </div>
     )
@@ -118,6 +142,24 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
+          {/* User Header */}
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-3">
+              <User className="h-8 w-8 text-gray-600" />
+              <div>
+                <h3 className="font-semibold text-gray-900">Welcome, {session?.user?.name || 'User'}</h3>
+                <p className="text-sm text-gray-600">{session?.user?.email}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
+          </div>
+
           <header className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl mb-6 shadow-lg">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
