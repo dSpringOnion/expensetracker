@@ -71,6 +71,7 @@ model Expense {
   title          String
   amount         Float
   category       String
+  categories     String[] // Multiple categories support
   description    String?
   date           DateTime
   receiptUrl     String?

@@ -44,6 +44,7 @@ export interface Expense {
   title: string
   amount: number
   category: string
+  categories: string[]
   description?: string
   date: Date
   receiptUrl?: string
@@ -62,6 +63,7 @@ export interface CreateExpenseData {
   title: string
   amount: number
   category: string
+  categories?: string[]
   description?: string
   date: Date
   receiptUrl?: string

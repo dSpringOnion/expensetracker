@@ -11,6 +11,7 @@ const createExpenseSchema = z.object({
   title: z.string().min(1),
   amount: z.number().positive(),
   category: z.string().min(1),
+  categories: z.array(z.string()).optional().default([]),
   description: z.string().optional(),
   date: z.string().transform((str) => new Date(str)),
   businessId: z.string().optional(),

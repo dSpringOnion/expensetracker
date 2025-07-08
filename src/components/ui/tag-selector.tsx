@@ -34,7 +34,7 @@ export function TagSelector({
   showAddButton = false,
   onAddTag
 }: TagSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
   const filteredTags = tags.filter(tag =>
@@ -43,13 +43,14 @@ export function TagSelector({
 
   const handleTagClick = (tag: Tag) => {
     onTagSelect(tag)
-    setIsOpen(false)
+    setIsExpanded(false)
     setSearchTerm('')
   }
 
   const clearSelection = () => {
+    onTagSelect({ id: '', label: '' }) // Clear the selection by passing empty tag
     setSearchTerm('')
-    setIsOpen(false)
+    setIsExpanded(false)
   }
 
   return (
@@ -82,56 +83,11 @@ export function TagSelector({
               placeholder={placeholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onFocus={() => setIsOpen(true)}
               className={cn(
                 "w-full p-3 border border-[#d1d1d1] rounded-md focus:outline-none focus:ring-2 focus:ring-[#007a5a] focus:border-transparent",
                 error && "border-red-500"
               )}
             />
-            
-            {/* Dropdown */}
-            {isOpen && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-[#d1d1d1] rounded-md shadow-lg max-h-60 overflow-auto">
-                {filteredTags.length > 0 ? (
-                  <div className="p-2 space-y-1">
-                    {filteredTags.map((tag) => (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        onClick={() => handleTagClick(tag)}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-[#f8f8f8] transition-colors"
-                      >
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#e8f5e8] text-[#007a5a] border border-[#007a5a]/20">
-                          {tag.label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-4 text-center text-[#616061]">
-                    No options found
-                  </div>
-                )}
-                
-                {showAddButton && onAddTag && (
-                  <div className="border-t border-[#e1e1e1] p-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        onAddTag()
-                        setIsOpen(false)
-                      }}
-                      className="w-full"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add New
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -141,27 +97,56 @@ export function TagSelector({
       )}
       
       {/* Tag Cloud for Quick Selection */}
-      {!selectedTag && !isOpen && tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-3">
-          <span className="text-xs text-[#616061] self-center">Quick select:</span>
-          {tags.slice(0, 6).map((tag) => (
-            <button
-              key={tag.id}
-              type="button"
-              onClick={() => handleTagClick(tag)}
-              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#f8f8f8] text-[#1d1c1d] border border-[#d1d1d1] hover:bg-[#e8f5e8] hover:border-[#007a5a]/20 hover:text-[#007a5a] transition-colors"
-            >
-              {tag.label}
-            </button>
-          ))}
-          {tags.length > 6 && (
-            <button
-              type="button"
-              onClick={() => setIsOpen(true)}
-              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#f8f8f8] text-[#616061] border border-[#d1d1d1] hover:bg-[#e8f5e8] transition-colors"
-            >
-              +{tags.length - 6} more
-            </button>
+      {!selectedTag && tags.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <span className="text-xs text-[#616061] self-center">Quick select:</span>
+            {(searchTerm ? filteredTags : tags)
+              .slice(0, isExpanded ? undefined : 6)
+              .map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => handleTagClick(tag)}
+                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#f8f8f8] text-[#1d1c1d] border border-[#d1d1d1] hover:bg-[#e8f5e8] hover:border-[#007a5a]/20 hover:text-[#007a5a] transition-colors"
+                >
+                  {tag.label}
+                </button>
+              ))
+            }
+          </div>
+          
+          {/* Show More/Less Button */}
+          {!searchTerm && tags.length > 6 && (
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="inline-flex items-center px-3 py-1 text-sm font-medium text-[#007a5a] hover:text-[#005a42] transition-colors"
+              >
+                {isExpanded ? (
+                  <>Show Less</>
+                ) : (
+                  <>Show {tags.length - 6} More</>
+                )}
+              </button>
+            </div>
+          )}
+          
+          {/* Add New Button */}
+          {showAddButton && onAddTag && (
+            <div className="pt-2 border-t border-[#e1e1e1]">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onAddTag}
+                className="w-full"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New
+              </Button>
+            </div>
           )}
         </div>
       )}

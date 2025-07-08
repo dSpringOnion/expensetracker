@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { TagSelector } from '@/components/ui/tag-selector'
+import { MultiTagSelector } from '@/components/ui/multi-tag-selector'
 import { FileUpload } from '@/components/ui/file-upload'
 import { EXPENSE_CATEGORIES, Business, Location } from '@/types'
 import { cn } from '@/lib/utils'
@@ -17,6 +18,7 @@ const expenseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   amount: z.coerce.number().positive('Amount must be positive'),
   category: z.string().min(1, 'Category is required'),
+  categories: z.array(z.string()).optional(),
   description: z.string().optional(),
   date: z.string().min(1, 'Date is required'),
   businessId: z.string().optional(),
@@ -40,7 +42,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
   const [locations, setLocations] = useState<Location[]>([])
   const [selectedBusiness, setSelectedBusiness] = useState<{id: string, label: string} | undefined>()
   const [selectedLocation, setSelectedLocation] = useState<{id: string, label: string} | undefined>()
-  const [selectedCategory, setSelectedCategory] = useState<{id: string, label: string} | undefined>()
+  const [selectedCategories, setSelectedCategories] = useState<{id: string, label: string}[]>([])
   const [receiptFile, setReceiptFile] = useState<File | undefined>()
   
   const {
@@ -55,6 +57,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       title: initialData?.title || '',
       amount: initialData?.amount || 0,
       category: initialData?.category || '',
+      categories: initialData?.categories || [],
       description: initialData?.description || '',
       date: initialData?.date || new Date().toISOString().split('T')[0],
       businessId: initialData?.businessId || '',
@@ -90,10 +93,14 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
   }, [selectedLocation, setValue])
 
   useEffect(() => {
-    if (selectedCategory) {
-      setValue('category', selectedCategory.label)
+    if (selectedCategories.length > 0) {
+      setValue('category', selectedCategories[0].label) // Primary category for backward compatibility
+      setValue('categories', selectedCategories.map(c => c.label))
+    } else {
+      setValue('category', '')
+      setValue('categories', [])
     }
-  }, [selectedCategory, setValue])
+  }, [selectedCategories, setValue])
 
   const fetchBusinesses = async () => {
     try {
@@ -126,7 +133,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       reset()
       setSelectedBusiness(undefined)
       setSelectedLocation(undefined)
-      setSelectedCategory(undefined)
+      setSelectedCategories([])
       setReceiptFile(undefined)
     } catch (error) {
       console.error('Failed to submit expense:', error)
@@ -173,7 +180,13 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
         label="Business"
         tags={businesses.map(b => ({ id: b.id, label: b.name }))}
         selectedTag={selectedBusiness}
-        onTagSelect={setSelectedBusiness}
+        onTagSelect={(tag) => {
+          if (tag.id && tag.label) {
+            setSelectedBusiness(tag)
+          } else {
+            setSelectedBusiness(undefined)
+          }
+        }}
         placeholder="Select a business (optional)"
         showAddButton={true}
         onAddTag={() => alert('Add new business functionality coming soon!')}
@@ -185,7 +198,13 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
           label="Location"
           tags={locations.map(l => ({ id: l.id, label: l.name }))}
           selectedTag={selectedLocation}
-          onTagSelect={setSelectedLocation}
+          onTagSelect={(tag) => {
+            if (tag.id && tag.label) {
+              setSelectedLocation(tag)
+            } else {
+              setSelectedLocation(undefined)
+            }
+          }}
           placeholder="Select a location (optional)"
           showAddButton={true}
           onAddTag={() => alert('Add new location functionality coming soon!')}
@@ -193,13 +212,20 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       )}
 
       {/* Category Selection */}
-      <TagSelector
-        label="Category *"
+      <MultiTagSelector
+        label="Categories *"
         tags={EXPENSE_CATEGORIES.map(c => ({ id: c, label: c }))}
-        selectedTag={selectedCategory}
-        onTagSelect={(tag) => setSelectedCategory(tag)}
-        placeholder="Select a category"
+        selectedTags={selectedCategories}
+        onTagsChange={(tags) => {
+          // Filter out empty tags from the clear function
+          const validTags = tags.filter(tag => tag.id && tag.label)
+          setSelectedCategories(validTags)
+        }}
+        placeholder="Select expense categories"
         error={errors.category?.message}
+        maxTags={3}
+        showAddButton={true}
+        onAddTag={() => alert('Add new category functionality coming soon!')}
       />
 
       <div className="space-y-2">

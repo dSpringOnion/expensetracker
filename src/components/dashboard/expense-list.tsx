@@ -40,9 +40,18 @@ export function ExpenseList({ expenses, onDelete, className }: ExpenseListProps)
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-sm text-slack-secondary mb-2">
-                  <span className="bg-[#f8f8f8] text-slack-primary px-3 py-1 rounded-full font-medium border border-slack">
-                    {expense.category}
-                  </span>
+                  {/* Display multiple categories if available, otherwise single category */}
+                  {expense.categories && expense.categories.length > 0 ? (
+                    expense.categories.map((cat, index) => (
+                      <span key={index} className="bg-[#f8f8f8] text-slack-primary px-3 py-1 rounded-full font-medium border border-slack">
+                        {cat}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="bg-[#f8f8f8] text-slack-primary px-3 py-1 rounded-full font-medium border border-slack">
+                      {expense.category}
+                    </span>
+                  )}
                   <span>{formatDate(new Date(expense.date))}</span>
                   
                   {/* Approval Status */}
