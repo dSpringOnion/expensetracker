@@ -204,10 +204,9 @@ export function FileUpload({
         <div className="relative inline-block mb-4">
           {isImage ? (
             <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
-                alt="File preview"
+                alt="Receipt preview"
                 className="max-w-full max-h-32 rounded-lg border border-[#e1e1e1]"
               />
               <Button

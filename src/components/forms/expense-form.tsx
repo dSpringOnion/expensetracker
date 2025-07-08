@@ -298,7 +298,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
             )}
             {useReceiptMode && (
               <p className="text-xs text-gray-600">
-                💡 Amount was extracted from receipt - please verify it's correct
+                💡 Amount was extracted from receipt - please verify it&apos;s correct
               </p>
             )}
           </div>
@@ -345,7 +345,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
             )}
             {useReceiptMode && (
               <p className="text-xs text-gray-600">
-                💡 Date was extracted from receipt - please verify it's correct
+                💡 Date was extracted from receipt - please verify it&apos;s correct
               </p>
             )}
           </div>
