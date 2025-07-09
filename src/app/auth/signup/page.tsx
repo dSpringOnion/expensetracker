@@ -12,6 +12,7 @@ export default function SignUp() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [organizationCode, setOrganizationCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -37,7 +38,7 @@ export default function SignUp() {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, organizationCode }),
       })
 
       if (response.ok) {
@@ -127,6 +128,21 @@ export default function SignUp() {
                 required
                 disabled={isLoading}
               />
+            </div>
+            
+            <div>
+              <Label htmlFor="organizationCode">Organization code (optional)</Label>
+              <Input
+                id="organizationCode"
+                type="text"
+                value={organizationCode}
+                onChange={(e) => setOrganizationCode(e.target.value)}
+                placeholder="Enter organization code to join existing team"
+                disabled={isLoading}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Leave blank to create your own organization
+              </p>
             </div>
             
             <Button

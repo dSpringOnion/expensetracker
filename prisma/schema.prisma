@@ -13,6 +13,7 @@ datasource db {
 model Organization {
   id          String     @id @default(cuid())
   name        String
+  inviteCode  String?    @unique
   taxId       String?
   address     String?
   settings    Json?

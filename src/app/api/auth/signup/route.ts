@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { createId } from '@paralleldrive/cuid2'
 
 // Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password } = await request.json()
+    const { name, email, password, organizationCode } = await request.json()
 
     // Validate input
     if (!name || !email || !password) {
@@ -46,15 +47,42 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create organization and user in a transaction
+    // Handle organization logic
     const result = await db.$transaction(async (tx) => {
-      // Create default organization for the user
-      const organization = await tx.organization.create({
-        data: {
-          name: `${name}'s Organization`,
-          settings: {}
+      let organization
+      let userRole = 'owner'
+      
+      // Check if organization code is provided
+      if (organizationCode && organizationCode.trim()) {
+        // Try to find existing organization by invite code
+        const existingOrg = await tx.organization.findUnique({
+          where: { inviteCode: organizationCode.trim() }
+        })
+        
+        if (existingOrg) {
+          // Join existing organization as employee
+          organization = existingOrg
+          userRole = 'employee'
+        } else {
+          // Invalid organization code - create new organization
+          organization = await tx.organization.create({
+            data: {
+              name: `${name}'s Organization`,
+              inviteCode: createId(),
+              settings: {}
+            }
+          })
         }
-      })
+      } else {
+        // No organization code provided - create new organization
+        organization = await tx.organization.create({
+          data: {
+            name: `${name}'s Organization`,
+            inviteCode: createId(),
+            settings: {}
+          }
+        })
+      }
 
       // Create user with organization
       const user = await tx.user.create({
@@ -62,7 +90,7 @@ export async function POST(request: NextRequest) {
           name,
           email,
           password: hashedPassword,
-          role: 'owner', // First user is owner of their organization
+          role: userRole,
           organizationId: organization.id
         }
       })
