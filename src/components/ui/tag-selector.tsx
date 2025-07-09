@@ -97,45 +97,49 @@ export function TagSelector({
       )}
       
       {/* Tag Cloud for Quick Selection */}
-      {!selectedTag && tags.length > 0 && (
+      {!selectedTag && (
         <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            <span className="text-xs text-gray-600 font-medium self-center">Quick select:</span>
-            {(searchTerm ? filteredTags : tags)
-              .slice(0, isExpanded ? undefined : 6)
-              .map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => handleTagClick(tag)}
-                  className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all duration-200 shadow-sm"
-                >
-                  {tag.label}
-                </button>
-              ))
-            }
-          </div>
-          
-          {/* Show More/Less Button */}
-          {!searchTerm && tags.length > 6 && (
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all duration-200"
-              >
-                {isExpanded ? (
-                  <>Show Less</>
-                ) : (
-                  <>Show {tags.length - 6} More</>
-                )}
-              </button>
-            </div>
+          {tags.length > 0 && (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs text-gray-600 font-medium self-center">Quick select:</span>
+                {(searchTerm ? filteredTags : tags)
+                  .slice(0, isExpanded ? undefined : 6)
+                  .map((tag) => (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => handleTagClick(tag)}
+                      className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all duration-200 shadow-sm"
+                    >
+                      {tag.label}
+                    </button>
+                  ))
+                }
+              </div>
+              
+              {/* Show More/Less Button */}
+              {!searchTerm && tags.length > 6 && (
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="inline-flex items-center px-4 py-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all duration-200"
+                  >
+                    {isExpanded ? (
+                      <>Show Less</>
+                    ) : (
+                      <>Show {tags.length - 6} More</>
+                    )}
+                  </button>
+                </div>
+              )}
+            </>
           )}
           
-          {/* Add New Button */}
+          {/* Add New Button - Always show when showAddButton is true */}
           {showAddButton && onAddTag && (
-            <div className="pt-2 border-t border-[#e1e1e1]">
+            <div className={tags.length > 0 ? "pt-2 border-t border-[#e1e1e1]" : ""}>
               <Button
                 type="button"
                 variant="outline"

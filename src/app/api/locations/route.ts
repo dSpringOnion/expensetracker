@@ -1,16 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { db } from '@/lib/db'
+import { createAuthenticatedRoute } from '@/lib/auth-middleware'
 
-const prisma = new PrismaClient()
-
-export async function GET(request: NextRequest) {
+export const GET = createAuthenticatedRoute(async (request: NextRequest, user) => {
   try {
     const { searchParams } = new URL(request.url)
     const businessId = searchParams.get('businessId')
 
-    const where = businessId ? { businessId } : {}
+    let where = {}
 
-    const locations = await prisma.location.findMany({
+    if (businessId) {
+      // Verify user has access to this business
+      const business = await db.business.findUnique({
+        where: { id: businessId },
+        select: { organizationId: true }
+      })
+
+      if (!business) {
+        return NextResponse.json({ error: 'Business not found' }, { status: 404 })
+      }
+
+      if (user.role !== 'owner' && user.organizationId !== business.organizationId) {
+        return NextResponse.json(
+          { error: 'Forbidden - Cannot access locations from other organizations' },
+          { status: 403 }
+        )
+      }
+
+      where = { businessId }
+    } else {
+      // Get all locations for user's organization
+      where = {
+        business: {
+          organizationId: user.organizationId
+        }
+      }
+    }
+
+    const locations = await db.location.findMany({
       where,
       include: {
         business: {
@@ -33,18 +60,37 @@ export async function GET(request: NextRequest) {
     console.error('Failed to fetch locations:', error)
     return NextResponse.json({ error: 'Failed to fetch locations' }, { status: 500 })
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = createAuthenticatedRoute(async (request: NextRequest, user) => {
   try {
     const body = await request.json()
     const { businessId, name, address, managerEmail, settings } = body
 
     if (!businessId || !name) {
-      return NextResponse.json({ error: 'Business ID and location name are required' }, { status: 400 })
+      return NextResponse.json({ 
+        error: 'Business ID and location name are required' 
+      }, { status: 400 })
     }
 
-    const location = await prisma.location.create({
+    // Verify user has access to this business
+    const business = await db.business.findUnique({
+      where: { id: businessId },
+      select: { organizationId: true }
+    })
+
+    if (!business) {
+      return NextResponse.json({ error: 'Business not found' }, { status: 404 })
+    }
+
+    if (user.role !== 'owner' && user.organizationId !== business.organizationId) {
+      return NextResponse.json(
+        { error: 'Forbidden - Cannot create locations in other organizations' },
+        { status: 403 }
+      )
+    }
+
+    const location = await db.location.create({
       data: {
         businessId,
         name,
@@ -66,4 +112,4 @@ export async function POST(request: NextRequest) {
     console.error('Failed to create location:', error)
     return NextResponse.json({ error: 'Failed to create location' }, { status: 500 })
   }
-}
+})

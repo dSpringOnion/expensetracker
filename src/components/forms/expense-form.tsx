@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { TagSelector } from '@/components/ui/tag-selector'
 import { MultiTagSelector } from '@/components/ui/multi-tag-selector'
-import { FileUpload } from '@/components/ui/file-upload'
+import { SimpleBusinessForm } from '@/components/forms/simple-business-form'
+import { SimpleLocationForm } from '@/components/forms/simple-location-form'
 import { EXPENSE_CATEGORIES, Business, Location } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -43,8 +44,8 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
   const [selectedBusiness, setSelectedBusiness] = useState<{id: string, label: string} | undefined>()
   const [selectedLocation, setSelectedLocation] = useState<{id: string, label: string} | undefined>()
   const [selectedCategories, setSelectedCategories] = useState<{id: string, label: string}[]>([])
-  const [receiptFile, setReceiptFile] = useState<File | undefined>()
-  const [useReceiptMode, setUseReceiptMode] = useState(false)
+  const [showAddBusiness, setShowAddBusiness] = useState(false)
+  const [showAddLocation, setShowAddLocation] = useState(false)
   
   const {
     register,
@@ -95,7 +96,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
 
   useEffect(() => {
     if (selectedCategories.length > 0) {
-      setValue('category', selectedCategories[0].label) // Primary category for backward compatibility
+      setValue('category', selectedCategories[0].label)
       setValue('categories', selectedCategories.map(c => c.label))
     } else {
       setValue('category', '')
@@ -111,11 +112,11 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
         setBusinesses(data)
       } else {
         console.error('Failed to fetch businesses: HTTP', response.status)
-        setBusinesses([]) // Set empty array as fallback
+        setBusinesses([])
       }
     } catch (error) {
       console.error('Failed to fetch businesses:', error)
-      setBusinesses([]) // Set empty array as fallback
+      setBusinesses([])
     }
   }
 
@@ -127,24 +128,34 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
         setLocations(data)
       } else {
         console.error('Failed to fetch locations: HTTP', response.status)
-        setLocations([]) // Set empty array as fallback
+        setLocations([])
       }
     } catch (error) {
       console.error('Failed to fetch locations:', error)
-      setLocations([]) // Set empty array as fallback
+      setLocations([])
     }
+  }
+
+  const handleBusinessAdded = (business: Business) => {
+    setBusinesses(prev => [...prev, business])
+    setSelectedBusiness({id: business.id, label: business.name})
+    setShowAddBusiness(false)
+  }
+
+  const handleLocationAdded = (location: Location) => {
+    setLocations(prev => [...prev, location])
+    setSelectedLocation({id: location.id, label: location.name})
+    setShowAddLocation(false)
   }
 
   const handleFormSubmit = async (data: ExpenseFormData) => {
     setIsSubmitting(true)
     try {
-      await onSubmit({ ...data, receiptFile })
+      await onSubmit(data)
       reset()
       setSelectedBusiness(undefined)
       setSelectedLocation(undefined)
       setSelectedCategories([])
-      setReceiptFile(undefined)
-      setUseReceiptMode(false)
     } catch (error) {
       console.error('Failed to submit expense:', error)
     } finally {
@@ -157,114 +168,60 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       onSubmit={handleSubmit(handleFormSubmit)}
       className={cn('space-y-6', className)}
     >
-      {/* Receipt Mode Toggle */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Do you have a receipt?
-            </h3>
-            <p className="text-gray-600 mb-4">
-              We can extract the amount, vendor, and date automatically from your receipt image!
-            </p>
-            <button
-              type="button"
-              onClick={() => setUseReceiptMode(!useReceiptMode)}
-              className={cn(
-                "inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200",
-                useReceiptMode
-                  ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
-                  : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-              )}
-            >
-              {useReceiptMode ? (
-                <>
-                  ✓ Using receipt mode
-                </>
-              ) : (
-                <>
-                  📸 Yes, use my receipt
-                </>
-              )}
-            </button>
-            {useReceiptMode && (
-              <button
-                type="button"
-                onClick={() => setUseReceiptMode(false)}
-                className="ml-3 text-sm text-gray-500 hover:text-gray-700 underline"
-              >
-                Switch to manual entry
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-      {/* Receipt Upload - Show first in receipt mode */}
-      {useReceiptMode && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h4 className="font-semibold text-yellow-900 mb-3">📸 Upload Your Receipt</h4>
-          <FileUpload
-            label=""
-            description="Upload receipt image - we'll extract amount, vendor, and date automatically"
-            onFileSelect={setReceiptFile}
-            onOCRComplete={(extractedData) => {
-              // Pre-fill form with extracted data
-              if (extractedData.amount) setValue('amount', extractedData.amount)
-              if (extractedData.vendor) setValue('vendorName', extractedData.vendor)
-              if (extractedData.date) setValue('date', extractedData.date)
-            }}
-            acceptedTypes="image/*"
-            maxSize={10}
-            onRemove={() => setReceiptFile(undefined)}
-          />
-        </div>
-      )}
-
-      {/* Business Context - Always Required */}
+      {/* Business Context */}
       <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
         <h4 className="font-semibold text-emerald-900 mb-3">🏢 Business Context</h4>
         <div className="space-y-4">
           {/* Business Selection */}
-          <TagSelector
-            label="Business"
-            tags={businesses.map(b => ({ id: b.id, label: b.name }))}
-            selectedTag={selectedBusiness}
-            onTagSelect={(tag) => {
-              if (tag.id && tag.label) {
-                setSelectedBusiness(tag)
-              } else {
-                setSelectedBusiness(undefined)
-              }
-            }}
-            placeholder="Select a business (optional)"
-            showAddButton={true}
-            onAddTag={() => alert('Add new business functionality coming soon!')}
-          />
+          {showAddBusiness ? (
+            <SimpleBusinessForm
+              onBusinessAdded={handleBusinessAdded}
+              onCancel={() => setShowAddBusiness(false)}
+            />
+          ) : (
+            <TagSelector
+              label="Business"
+              tags={businesses.map(b => ({ id: b.id, label: b.name }))}
+              selectedTag={selectedBusiness}
+              onTagSelect={(tag) => {
+                if (tag.id && tag.label) {
+                  setSelectedBusiness(tag)
+                } else {
+                  setSelectedBusiness(undefined)
+                }
+              }}
+              placeholder="Select a business (optional)"
+              showAddButton={true}
+              onAddTag={() => setShowAddBusiness(true)}
+            />
+          )}
 
           {/* Location Selection */}
           {selectedBusiness && (
-            <TagSelector
-              label="Location"
-              tags={locations.map(l => ({ id: l.id, label: l.name }))}
-              selectedTag={selectedLocation}
-              onTagSelect={(tag) => {
-                if (tag.id && tag.label) {
-                  setSelectedLocation(tag)
-                } else {
-                  setSelectedLocation(undefined)
-                }
-              }}
-              placeholder="Select a location (optional)"
-              showAddButton={true}
-              onAddTag={() => alert('Add new location functionality coming soon!')}
-            />
+            showAddLocation ? (
+              <SimpleLocationForm
+                businessId={selectedBusiness.id}
+                businessName={selectedBusiness.label}
+                onLocationAdded={handleLocationAdded}
+                onCancel={() => setShowAddLocation(false)}
+              />
+            ) : (
+              <TagSelector
+                label="Location"
+                tags={locations.map(l => ({ id: l.id, label: l.name }))}
+                selectedTag={selectedLocation}
+                onTagSelect={(tag) => {
+                  if (tag.id && tag.label) {
+                    setSelectedLocation(tag)
+                  } else {
+                    setSelectedLocation(undefined)
+                  }
+                }}
+                placeholder="Select a location (optional)"
+                showAddButton={true}
+                onAddTag={() => setShowAddLocation(true)}
+              />
+            )
           )}
         </div>
       </div>
@@ -278,16 +235,11 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
             <Input
               id="title"
               {...register('title')}
-              placeholder={useReceiptMode ? "What was this expense for? (e.g., Team lunch, Office supplies)" : "Enter expense title"}
+              placeholder="Enter expense title"
               className={errors.title ? 'border-red-500' : ''}
             />
             {errors.title && (
               <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
-            )}
-            {useReceiptMode && (
-              <p className="text-xs text-gray-600">
-                💡 We extracted vendor info from your receipt - please tell us the business purpose
-              </p>
             )}
           </div>
 
@@ -304,11 +256,6 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
             {errors.amount && (
               <p className="text-sm text-red-500 mt-1">{errors.amount.message}</p>
             )}
-            {useReceiptMode && (
-              <p className="text-xs text-gray-600">
-                💡 Amount was extracted from receipt - please verify it&apos;s correct
-              </p>
-            )}
           </div>
         </div>
       </div>
@@ -321,15 +268,13 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
           tags={EXPENSE_CATEGORIES.map(c => ({ id: c, label: c }))}
           selectedTags={selectedCategories}
           onTagsChange={(tags) => {
-            // Filter out empty tags from the clear function
             const validTags = tags.filter(tag => tag.id && tag.label)
             setSelectedCategories(validTags)
           }}
           placeholder="Select expense categories"
           error={errors.category?.message}
           maxTags={3}
-          showAddButton={true}
-          onAddTag={() => alert('Add new category functionality coming soon!')}
+          showAddButton={false}
         />
         <p className="text-xs text-purple-600 mt-2">
           💡 Select up to 3 categories that best describe this expense
@@ -351,11 +296,6 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
             {errors.date && (
               <p className="text-sm text-red-500 mt-1">{errors.date.message}</p>
             )}
-            {useReceiptMode && (
-              <p className="text-xs text-gray-600">
-                💡 Date was extracted from receipt - please verify it&apos;s correct
-              </p>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -363,14 +303,8 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
             <Input
               id="vendorName"
               {...register('vendorName')}
-              placeholder={useReceiptMode ? "Vendor extracted from receipt" : "Enter vendor or supplier name (optional)"}
-              className={useReceiptMode ? 'bg-blue-50' : ''}
+              placeholder="Enter vendor or supplier name (optional)"
             />
-            {useReceiptMode && (
-              <p className="text-xs text-gray-600">
-                💡 Vendor was extracted from receipt - you can edit if needed
-              </p>
-            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -397,7 +331,6 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
           </div>
         </div>
       </div>
-
 
       {/* Description */}
       <div className="space-y-2">

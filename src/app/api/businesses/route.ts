@@ -1,17 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { db } from '@/lib/db'
+import { createAuthenticatedRoute } from '@/lib/auth-middleware'
 
-const prisma = new PrismaClient()
-
-export async function GET(request: NextRequest) {
+export const GET = createAuthenticatedRoute(async (request: NextRequest, user) => {
   try {
     const { searchParams } = new URL(request.url)
     const organizationId = searchParams.get('organizationId')
 
-    const where = organizationId ? { organizationId } : {}
+    // Use user's organizationId if not provided and user is not owner
+    const effectiveOrgId = organizationId || user.organizationId
+    
+    if (!effectiveOrgId) {
+      // Return empty array if user has no organization yet
+      return NextResponse.json([])
+    }
 
-    const businesses = await prisma.business.findMany({
-      where,
+    // Ensure user can only access their organization's businesses
+    if (user.role !== 'owner' && user.organizationId !== effectiveOrgId) {
+      return NextResponse.json(
+        { error: 'Forbidden - Cannot access other organizations' },
+        { status: 403 }
+      )
+    }
+
+    const businesses = await db.business.findMany({
+      where: { organizationId: effectiveOrgId },
       include: {
         organization: true,
         locations: true,
@@ -30,20 +43,33 @@ export async function GET(request: NextRequest) {
     console.error('Failed to fetch businesses:', error)
     return NextResponse.json({ error: 'Failed to fetch businesses' }, { status: 500 })
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = createAuthenticatedRoute(async (request: NextRequest, user) => {
   try {
     const body = await request.json()
     const { organizationId, name, businessType, taxSettings } = body
 
-    if (!organizationId || !name) {
-      return NextResponse.json({ error: 'Organization ID and business name are required' }, { status: 400 })
+    // Use user's organizationId if not provided
+    const effectiveOrgId = organizationId || user.organizationId
+
+    if (!effectiveOrgId || !name) {
+      return NextResponse.json({ 
+        error: 'Organization ID and business name are required' 
+      }, { status: 400 })
     }
 
-    const business = await prisma.business.create({
+    // Ensure user can only create businesses in their organization
+    if (user.role !== 'owner' && user.organizationId !== effectiveOrgId) {
+      return NextResponse.json(
+        { error: 'Forbidden - Cannot create businesses in other organizations' },
+        { status: 403 }
+      )
+    }
+
+    const business = await db.business.create({
       data: {
-        organizationId,
+        organizationId: effectiveOrgId,
         name,
         businessType,
         taxSettings
@@ -59,4 +85,4 @@ export async function POST(request: NextRequest) {
     console.error('Failed to create business:', error)
     return NextResponse.json({ error: 'Failed to create business' }, { status: 500 })
   }
-}
+})

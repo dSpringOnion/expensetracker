@@ -46,16 +46,31 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user
-    const user = await db.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: 'employee', // Default role
-        // organizationId will be set later when user joins an organization
-      }
+    // Create organization and user in a transaction
+    const result = await db.$transaction(async (tx) => {
+      // Create default organization for the user
+      const organization = await tx.organization.create({
+        data: {
+          name: `${name}'s Organization`,
+          settings: {}
+        }
+      })
+
+      // Create user with organization
+      const user = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role: 'owner', // First user is owner of their organization
+          organizationId: organization.id
+        }
+      })
+
+      return { user, organization }
     })
+
+    const { user } = result
 
     // Return success (don't include password in response)
     return NextResponse.json(

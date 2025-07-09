@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { db } from '@/lib/db'
 
-const prisma = new PrismaClient()
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +8,7 @@ export async function GET(
 ) {
   const { id } = await context.params
   try {
-    const organization = await prisma.organization.findUnique({
+    const organization = await db.organization.findUnique({
       where: { id },
       include: {
         businesses: {
@@ -45,7 +44,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Organization name is required' }, { status: 400 })
     }
 
-    const organization = await prisma.organization.update({
+    const organization = await db.organization.update({
       where: { id },
       data: {
         name,
@@ -68,7 +67,7 @@ export async function DELETE(
 ) {
   const { id } = await context.params
   try {
-    await prisma.organization.delete({
+    await db.organization.delete({
       where: { id }
     })
 

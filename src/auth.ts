@@ -39,7 +39,6 @@ const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           organizationId: user.organizationId,
-          organization: user.organization
         }
       }
     })
@@ -79,3 +78,4 @@ const authOptions: NextAuthOptions = {
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth(authOptions)
+export { authOptions }

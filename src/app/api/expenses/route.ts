@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { db } from '@/lib/db'
 import { z } from 'zod'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import { auth } from '@/auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/auth'
 
-const prisma = new PrismaClient()
 
 const createExpenseSchema = z.object({
   title: z.string().min(1),
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createExpenseSchema.parse(expenseData)
     
     // Get authenticated user
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     
     const userId = session.user.id
     
-    const expense = await prisma.expense.create({
+    const expense = await db.expense.create({
       data: {
         ...validatedData,
         userId,
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Get authenticated user
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
     const approvalStatus = searchParams.get('approvalStatus')
     const limit = searchParams.get('limit')
     
-    const expenses = await prisma.expense.findMany({
+    const expenses = await db.expense.findMany({
       where: {
         userId,
         ...(category && { category }),
