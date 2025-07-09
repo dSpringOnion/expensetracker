@@ -53,9 +53,15 @@ export const POST = createAuthenticatedRoute(async (request: NextRequest, user) 
     // Use user's organizationId if not provided
     const effectiveOrgId = organizationId || user.organizationId
 
-    if (!effectiveOrgId || !name) {
+    if (!name) {
       return NextResponse.json({ 
-        error: 'Organization ID and business name are required' 
+        error: 'Business name is required' 
+      }, { status: 400 })
+    }
+
+    if (!effectiveOrgId) {
+      return NextResponse.json({ 
+        error: 'User must be associated with an organization to create businesses' 
       }, { status: 400 })
     }
 
