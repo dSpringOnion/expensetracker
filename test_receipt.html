@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: white;
+            margin: 20px;
+            width: 300px;
+        }
+        .receipt {
+            border: 1px solid #000;
+            padding: 20px;
+            background: white;
+            text-align: center;
+        }
+        .store-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .date {
+            margin: 10px 0;
+        }
+        .item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        .total {
+            border-top: 1px solid #000;
+            margin-top: 10px;
+            padding-top: 5px;
+            font-weight: bold;
+        }
+        .address {
+            font-size: 12px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <div class="store-name">COFFEE BEAN CAFE</div>
+        <div class="address">123 Main Street<br>Anytown, NY 10001</div>
+        <div class="date">Date: 07/10/2025</div>
+        <div class="date">Time: 10:30 AM</div>
+        
+        <div style="margin: 20px 0;">
+            <div class="item">
+                <span>Espresso</span>
+                <span>$4.50</span>
+            </div>
+            <div class="item">
+                <span>Croissant</span>
+                <span>$3.25</span>
+            </div>
+            <div class="item">
+                <span>Tax</span>
+                <span>$0.62</span>
+            </div>
+            <div class="total">
+                <div class="item">
+                    <span>TOTAL</span>
+                    <span>$8.37</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 12px;">
+            Thank you for your visit!<br>
+            Receipt #: R-2025-001234
+        </div>
+    </div>
+</body>
+</html>

@@ -338,6 +338,23 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
         </div>
       </div>
 
+      {/* Receipt Upload */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-semibold text-blue-900 mb-3">📄 Receipt Upload (Optional)</h4>
+        <FileUpload
+          onFileSelect={handleFileSelect}
+          onOCRComplete={handleOCRComplete}
+          label="Upload Receipt"
+          description="Upload a receipt image for automatic data extraction"
+          acceptedTypes="image/*,.pdf"
+          maxSize={10}
+          showPreview={true}
+        />
+        <p className="text-xs text-blue-600 mt-2">
+          💡 Upload a receipt image and we&apos;ll automatically extract the amount, vendor, and other details
+        </p>
+      </div>
+
       {/* Expense Details */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <h4 className="font-semibold text-gray-900 mb-3">💰 Expense Details</h4>
@@ -453,23 +470,6 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
           placeholder="Enter expense description (optional)"
           rows={3}
         />
-      </div>
-
-      {/* Receipt Upload */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-semibold text-blue-900 mb-3">📄 Receipt Upload (Optional)</h4>
-        <FileUpload
-          onFileSelect={handleFileSelect}
-          onOCRComplete={handleOCRComplete}
-          label="Upload Receipt"
-          description="Upload a receipt image for automatic data extraction"
-          acceptedTypes="image/*,.pdf"
-          maxSize={10}
-          showPreview={true}
-        />
-        <p className="text-xs text-blue-600 mt-2">
-          💡 Upload a receipt image and we&apos;ll automatically extract the amount, vendor, and other details
-        </p>
       </div>
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
