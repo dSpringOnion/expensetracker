@@ -55,11 +55,6 @@ export async function POST(request: NextRequest) {
     // Parse JSON data from form
     const jsonData = formData.get('data') as string
     const expenseData = JSON.parse(jsonData)
-    
-    // Debug logging
-    console.log('Received expense data:', expenseData)
-    console.log('BusinessId:', expenseData.businessId, 'LocationId:', expenseData.locationId)
-    
     const validatedData = createExpenseSchema.parse(expenseData)
     
     // Get authenticated user
