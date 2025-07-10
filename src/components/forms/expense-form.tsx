@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { TagSelector } from '@/components/ui/tag-selector'
 import { MultiTagSelector } from '@/components/ui/multi-tag-selector'
+import { FileUpload } from '@/components/ui/file-upload'
 import { SimpleBusinessForm } from '@/components/forms/simple-business-form'
 import { SimpleLocationForm } from '@/components/forms/simple-location-form'
 import { EXPENSE_CATEGORIES, Business, Location } from '@/types'
@@ -47,6 +48,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
   const [selectedCategories, setSelectedCategories] = useState<{id: string, label: string}[]>([])
   const [showAddBusiness, setShowAddBusiness] = useState(false)
   const [showAddLocation, setShowAddLocation] = useState(false)
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
   
   const {
     register,
@@ -208,16 +210,36 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
     setShowAddLocation(false)
   }
 
+  const handleFileSelect = (file: File) => {
+    setReceiptFile(file)
+  }
+
+  const handleOCRComplete = (extractedData: {
+    title?: string
+    amount?: number
+    vendor?: string
+    date?: string
+    description?: string
+  }) => {
+    // Auto-fill form with OCR extracted data
+    if (extractedData.title) setValue('title', extractedData.title)
+    if (extractedData.amount) setValue('amount', extractedData.amount)
+    if (extractedData.vendor) setValue('vendorName', extractedData.vendor)
+    if (extractedData.date) setValue('date', extractedData.date)
+    if (extractedData.description) setValue('description', extractedData.description)
+  }
+
   const handleFormSubmit = async (data: ExpenseFormData) => {
     setIsSubmitting(true)
     setSubmitError(null)
     try {
-      await onSubmit(data)
+      await onSubmit({ ...data, receiptFile: receiptFile || undefined })
       // Only clear form data on successful submission
       reset()
       setSelectedBusiness(undefined)
       setSelectedLocation(undefined)
       setSelectedCategories([])
+      setReceiptFile(null)
       // Clear saved form state from sessionStorage
       sessionStorage.removeItem('expenseFormState')
     } catch (error) {
@@ -431,6 +453,23 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
           placeholder="Enter expense description (optional)"
           rows={3}
         />
+      </div>
+
+      {/* Receipt Upload */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-semibold text-blue-900 mb-3">📄 Receipt Upload (Optional)</h4>
+        <FileUpload
+          onFileSelect={handleFileSelect}
+          onOCRComplete={handleOCRComplete}
+          label="Upload Receipt"
+          description="Upload a receipt image for automatic data extraction"
+          acceptedTypes="image/*,.pdf"
+          maxSize={10}
+          showPreview={true}
+        />
+        <p className="text-xs text-blue-600 mt-2">
+          💡 Upload a receipt image and we&apos;ll automatically extract the amount, vendor, and other details
+        </p>
       </div>
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
