@@ -22,8 +22,8 @@ const expenseSchema = z.object({
   categories: z.array(z.string()).optional(),
   description: z.string().optional(),
   date: z.string().min(1, 'Date is required'),
-  businessId: z.string().optional(),
-  locationId: z.string().optional(),
+  businessId: z.string().min(1, 'Business is required'),
+  locationId: z.string().min(1, 'Location is required'),
   vendorName: z.string().optional(),
   expenseCode: z.string().optional(),
   taxDeductible: z.boolean().optional(),
@@ -199,7 +199,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       )}
       {/* Business Context */}
       <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-        <h4 className="font-semibold text-emerald-900 mb-3">🏢 Business Context</h4>
+        <h4 className="font-semibold text-emerald-900 mb-3">🏢 Business Context *</h4>
         <div className="space-y-4">
           {/* Business Selection */}
           {showAddBusiness ? (
@@ -219,7 +219,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
                   setSelectedBusiness(undefined)
                 }
               }}
-              placeholder="Select a business (optional)"
+              placeholder="Select a business (required)"
               showAddButton={true}
               onAddTag={() => setShowAddBusiness(true)}
             />
@@ -246,7 +246,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
                     setSelectedLocation(undefined)
                   }
                 }}
-                placeholder="Select a location (optional)"
+                placeholder="Select a location (required)"
                 showAddButton={true}
                 onAddTag={() => setShowAddLocation(true)}
               />

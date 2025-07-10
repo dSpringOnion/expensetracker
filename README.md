@@ -279,8 +279,8 @@ The app can be deployed to any platform that supports Next.js:
 ### Using the Application
 
 1. **Add Expenses**: Go to "Add Expense" tab
-   - Required: Title, Amount, Date, at least 1 Category
-   - Optional: Business, Location, Vendor, Description, Expense Code
+   - Required: Title, Amount, Date, Business, Location, at least 1 Category
+   - Optional: Vendor, Description, Expense Code
 2. **Create Businesses**: Click "Add New" in Business section (inline creation)
 3. **Create Locations**: Select a business, then click "Add New" in Location section
 4. **View Analytics**: Go to "View Expenses" tab for statistics and filtering
