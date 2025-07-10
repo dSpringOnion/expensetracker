@@ -39,6 +39,7 @@ interface ExpenseFormProps {
 
 export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [locations, setLocations] = useState<Location[]>([])
   const [selectedBusiness, setSelectedBusiness] = useState<{id: string, label: string} | undefined>()
@@ -150,14 +151,19 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
 
   const handleFormSubmit = async (data: ExpenseFormData) => {
     setIsSubmitting(true)
+    setSubmitError(null)
     try {
       await onSubmit(data)
+      // Only clear form data on successful submission
       reset()
       setSelectedBusiness(undefined)
       setSelectedLocation(undefined)
       setSelectedCategories([])
     } catch (error) {
       console.error('Failed to submit expense:', error)
+      // Set error message for user feedback
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit expense. Please try again.'
+      setSubmitError(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -168,6 +174,29 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       onSubmit={handleSubmit(handleFormSubmit)}
       className={cn('space-y-6', className)}
     >
+      {/* Error Message */}
+      {submitError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <svg className="h-5 w-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm font-medium text-red-800">Error submitting expense</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSubmitError(null)}
+              className="text-red-400 hover:text-red-600"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <p className="text-sm text-red-600 mt-1">{submitError}</p>
+        </div>
+      )}
       {/* Business Context */}
       <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
         <h4 className="font-semibold text-emerald-900 mb-3">🏢 Business Context</h4>
@@ -262,7 +291,7 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
 
       {/* Category Selection */}
       <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-        <h4 className="font-semibold text-purple-900 mb-3">🏷️ Categories</h4>
+        <h4 className="font-semibold text-purple-900 mb-3">🏷️ Categories *</h4>
         <MultiTagSelector
           label=""
           tags={EXPENSE_CATEGORIES.map(c => ({ id: c, label: c }))}
@@ -271,13 +300,13 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
             const validTags = tags.filter(tag => tag.id && tag.label)
             setSelectedCategories(validTags)
           }}
-          placeholder="Select expense categories"
+          placeholder="Select expense categories (required)"
           error={errors.category?.message}
           maxTags={3}
           showAddButton={false}
         />
         <p className="text-xs text-purple-600 mt-2">
-          💡 Select up to 3 categories that best describe this expense
+          💡 Select 1-3 categories that best describe this expense (at least 1 required)
         </p>
       </div>
 
@@ -346,6 +375,8 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       <Button type="submit" disabled={isSubmitting} className="w-full">
         {isSubmitting ? 'Adding Expense...' : 'Add Expense'}
       </Button>
+      
+      {/* Success feedback could be added here if needed */}
     </form>
   )
 }

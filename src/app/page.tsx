@@ -50,33 +50,44 @@ export default function Home() {
   }
 
   const handleAddExpense = async (data: { title: string; amount: number; category: string; description?: string; date: string; businessId?: string; locationId?: string; vendorName?: string; expenseCode?: string; taxDeductible?: boolean; receiptFile?: File }) => {
-    try {
-      const formData = new FormData()
-      
-      // Add expense data as JSON
-      const { receiptFile, ...expenseData } = data
-      formData.append('data', JSON.stringify(expenseData))
-      
-      // Add receipt file if present
-      if (receiptFile) {
-        formData.append('receiptFile', receiptFile)
-      }
+    const formData = new FormData()
+    
+    // Add expense data as JSON
+    const { receiptFile, ...expenseData } = data
+    formData.append('data', JSON.stringify(expenseData))
+    
+    // Add receipt file if present
+    if (receiptFile) {
+      formData.append('receiptFile', receiptFile)
+    }
 
-      const response = await fetch('/api/expenses', {
-        method: 'POST',
-        body: formData,
-      })
+    const response = await fetch('/api/expenses', {
+      method: 'POST',
+      body: formData,
+    })
 
-      if (response.ok) {
-        const newExpense = await response.json()
-        setExpenses(prev => [newExpense, ...prev])
-        setActiveTab('list')
-      } else {
-        throw new Error('Failed to add expense')
+    if (response.ok) {
+      const newExpense = await response.json()
+      setExpenses(prev => [newExpense, ...prev])
+      setActiveTab('list')
+    } else {
+      // Get error details from response
+      let errorMessage = 'Failed to add expense'
+      try {
+        const errorData = await response.json()
+        if (errorData.error) {
+          errorMessage = errorData.error
+        }
+        if (errorData.details && Array.isArray(errorData.details)) {
+          // Handle validation errors
+          const validationErrors = errorData.details.map((err: { path?: string[]; message: string }) => `${err.path?.join('.')}: ${err.message}`).join(', ')
+          errorMessage = `Validation errors: ${validationErrors}`
+        }
+      } catch {
+        // If we can't parse the error response, use the status
+        errorMessage = `Failed to add expense (${response.status})`
       }
-    } catch (error) {
-      console.error('Failed to add expense:', error)
-      alert('Failed to add expense. Please try again.')
+      throw new Error(errorMessage)
     }
   }
 
