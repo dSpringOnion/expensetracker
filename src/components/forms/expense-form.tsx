@@ -53,7 +53,8 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
     handleSubmit,
     formState: { errors },
     reset,
-    setValue
+    setValue,
+    watch
   } = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
@@ -73,7 +74,65 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
 
   useEffect(() => {
     fetchBusinesses()
+    restoreFormState()
   }, [])
+
+  // Watch form fields for changes
+  const watchedFields = watch()
+
+  // Save form state to sessionStorage
+  useEffect(() => {
+    const formState = {
+      selectedBusiness,
+      selectedLocation,
+      selectedCategories,
+      formFields: {
+        title: watchedFields.title,
+        amount: watchedFields.amount,
+        description: watchedFields.description,
+        vendorName: watchedFields.vendorName,
+        expenseCode: watchedFields.expenseCode,
+        taxDeductible: watchedFields.taxDeductible,
+        date: watchedFields.date,
+      }
+    }
+    sessionStorage.setItem('expenseFormState', JSON.stringify(formState))
+  }, [selectedBusiness, selectedLocation, selectedCategories, watchedFields])
+
+  // Restore form state from sessionStorage
+  const restoreFormState = () => {
+    try {
+      const savedState = sessionStorage.getItem('expenseFormState')
+      if (savedState) {
+        const parsedState = JSON.parse(savedState)
+        
+        // Restore business/location/category selections
+        if (parsedState.selectedBusiness) {
+          setSelectedBusiness(parsedState.selectedBusiness)
+        }
+        if (parsedState.selectedLocation) {
+          setSelectedLocation(parsedState.selectedLocation)
+        }
+        if (parsedState.selectedCategories) {
+          setSelectedCategories(parsedState.selectedCategories)
+        }
+        
+        // Restore form field values
+        if (parsedState.formFields) {
+          const fields = parsedState.formFields
+          if (fields.title) setValue('title', fields.title)
+          if (fields.amount) setValue('amount', fields.amount)
+          if (fields.description) setValue('description', fields.description)
+          if (fields.vendorName) setValue('vendorName', fields.vendorName)
+          if (fields.expenseCode) setValue('expenseCode', fields.expenseCode)
+          if (fields.date) setValue('date', fields.date)
+          if (typeof fields.taxDeductible === 'boolean') setValue('taxDeductible', fields.taxDeductible)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to restore form state:', error)
+    }
+  }
 
   useEffect(() => {
     if (selectedBusiness) {
@@ -159,6 +218,8 @@ export function ExpenseForm({ onSubmit, initialData, className }: ExpenseFormPro
       setSelectedBusiness(undefined)
       setSelectedLocation(undefined)
       setSelectedCategories([])
+      // Clear saved form state from sessionStorage
+      sessionStorage.removeItem('expenseFormState')
     } catch (error) {
       console.error('Failed to submit expense:', error)
       // Set error message for user feedback
