@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { createId } from '@paralleldrive/cuid2'
+import { generateInviteCode } from '@/lib/roles'
+import { UserRole } from '@prisma/client'
 
 // Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -48,30 +50,71 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Handle organization logic
-    const result = await db.$transaction(async (tx) => {
-      let organization
-      let userRole = 'owner'
+    interface TransactionResult {
+      user: {
+        id: string
+        name: string | null
+        email: string
+        role: UserRole
+        organizationId: string | null
+      }
+      organization: {
+        id: string
+        name: string
+      }
+    }
+
+    const result = await db.$transaction(async (tx): Promise<TransactionResult> => {
+      let organization: { id: string; name: string }
+      let userRole: UserRole = UserRole.EMPLOYEE
       
       // Check if organization code is provided
       if (organizationCode && organizationCode.trim()) {
-        // Try to find existing organization by invite code
-        const existingOrg = await tx.organization.findUnique({
-          where: { inviteCode: organizationCode.trim() }
+        const code = organizationCode.trim()
+        
+        // First try to find role-based invite code
+        const inviteCode = await tx.inviteCode.findUnique({
+          where: { 
+            code,
+            isActive: true,
+          },
+          include: { organization: true }
         })
         
-        if (existingOrg) {
-          // Join existing organization as employee
-          organization = existingOrg
-          userRole = 'employee'
-        } else {
-          // Invalid organization code - create new organization
-          organization = await tx.organization.create({
-            data: {
-              name: `${name}'s Organization`,
-              inviteCode: createId(),
-              settings: {}
-            }
+        if (inviteCode) {
+          // Check if code is expired
+          if (inviteCode.expiresAt && inviteCode.expiresAt < new Date()) {
+            throw new Error('Invite code has expired')
+          }
+          
+          // Check if code has reached max uses
+          if (inviteCode.maxUses && inviteCode.usedCount >= inviteCode.maxUses) {
+            throw new Error('Invite code has reached maximum uses')
+          }
+          
+          // Use invite code
+          organization = inviteCode.organization
+          userRole = inviteCode.role
+          
+          // Increment usage count
+          await tx.inviteCode.update({
+            where: { id: inviteCode.id },
+            data: { usedCount: { increment: 1 } }
           })
+          
+        } else {
+          // Try legacy invite code (single org code)
+          const existingOrg = await tx.organization.findUnique({
+            where: { inviteCode: code }
+          })
+          
+          if (existingOrg) {
+            // Join existing organization as employee
+            organization = existingOrg
+            userRole = UserRole.EMPLOYEE
+          } else {
+            throw new Error('Invalid organization code')
+          }
         }
       } else {
         // No organization code provided - create new organization
@@ -82,6 +125,11 @@ export async function POST(request: NextRequest) {
             settings: {}
           }
         })
+        
+        // First user in organization becomes admin
+        userRole = UserRole.ORGANIZATION_ADMIN
+        
+        // Default invite codes will be created after user creation
       }
 
       // Create user with organization
@@ -92,8 +140,37 @@ export async function POST(request: NextRequest) {
           password: hashedPassword,
           role: userRole,
           organizationId: organization.id
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          organizationId: true,
         }
       })
+      
+      // If this is a new organization, create default invite codes
+      if (!organizationCode) {
+        const defaultCodes = [
+          UserRole.EMPLOYEE,
+          UserRole.MANAGER, 
+          UserRole.BUSINESS_OWNER,
+          UserRole.ORGANIZATION_ADMIN,
+        ]
+        
+        for (const role of defaultCodes) {
+          const code = generateInviteCode(organization.name, role)
+          await tx.inviteCode.create({
+            data: {
+              code,
+              role,
+              organizationId: organization.id,
+              createdBy: user.id,
+            }
+          })
+        }
+      }
 
       return { user, organization }
     })

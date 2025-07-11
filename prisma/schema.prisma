@@ -10,17 +10,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  EMPLOYEE
+  MANAGER
+  BUSINESS_OWNER
+  ORGANIZATION_ADMIN
+  SUPER_ADMIN
+}
+
 model Organization {
-  id          String     @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  inviteCode  String?    @unique
+  inviteCode  String?       @unique  // Legacy single invite code
   taxId       String?
   address     String?
   settings    Json?
   businesses  Business[]
   users       User[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  inviteCodes InviteCode[]  // New role-based invite codes
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model InviteCode {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  role           UserRole
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  maxUses        Int?         // Optional limit on how many times code can be used
+  usedCount      Int          @default(0)
+  expiresAt      DateTime?    // Optional expiration
+  isActive       Boolean      @default(true)
+  createdBy      String       // User ID who created this code
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([code])
 }
 
 model Business {
@@ -58,14 +85,17 @@ model User {
   email          String        @unique
   name           String?
   password       String?       // For credentials authentication
-  role           String        @default("employee")
+  role           UserRole      @default(EMPLOYEE)
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   expenses       Expense[]
+  isActive       Boolean       @default(true)
+  lastLoginAt    DateTime?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   @@index([organizationId])
+  @@index([role])
 }
 
 model Expense {

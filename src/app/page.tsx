@@ -8,15 +8,17 @@ import { ExpenseList } from '@/components/dashboard/expense-list'
 import { ExpenseStats } from '@/components/dashboard/expense-stats'
 import { ExpenseFilters as ExpenseFiltersComponent } from '@/components/dashboard/expense-filters'
 import { ImportExportSection } from '@/components/import-export/import-export-section'
+import { UserManagement } from '@/components/admin/user-management'
 import { Expense, ExpenseFilters } from '@/types'
-import { Plus, BarChart3, LogOut, User, FileSpreadsheet } from 'lucide-react'
+import { Plus, BarChart3, LogOut, User, FileSpreadsheet, Settings } from 'lucide-react'
 
 export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([])
-  const [activeTab, setActiveTab] = useState<'add' | 'list' | 'import-export'>('add')
+  const [activeTab, setActiveTab] = useState<'add' | 'list' | 'import-export' | 'admin'>('add')
+  const [userRole, setUserRole] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   // Redirect to signin if not authenticated
@@ -30,17 +32,30 @@ export default function Home() {
 
   useEffect(() => {
     fetchExpenses()
+    fetchUserRole()
   }, [])
+
+  const fetchUserRole = async (): Promise<void> => {
+    try {
+      const response = await fetch('/api/user/profile')
+      if (response.ok) {
+        const data: { role: string } = await response.json()
+        setUserRole(data.role)
+      }
+    } catch (error) {
+      console.error('Failed to fetch user role:', error)
+    }
+  }
 
   useEffect(() => {
     setFilteredExpenses(expenses)
   }, [expenses])
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = async (): Promise<void> => {
     try {
       const response = await fetch('/api/expenses')
       if (response.ok) {
-        const data = await response.json()
+        const data: Expense[] = await response.json()
         setExpenses(data)
       }
     } catch (error) {
@@ -50,7 +65,21 @@ export default function Home() {
     }
   }
 
-  const handleAddExpense = async (data: { title: string; amount: number; category: string; description?: string; date: string; businessId?: string; locationId?: string; vendorName?: string; expenseCode?: string; taxDeductible?: boolean; receiptFile?: File }) => {
+  interface AddExpenseData {
+    title: string
+    amount: number
+    category: string
+    description?: string
+    date: string
+    businessId?: string
+    locationId?: string
+    vendorName?: string
+    expenseCode?: string
+    taxDeductible?: boolean
+    receiptFile?: File
+  }
+
+  const handleAddExpense = async (data: AddExpenseData): Promise<void> => {
     const formData = new FormData()
     
     // Add expense data as JSON
@@ -68,20 +97,20 @@ export default function Home() {
     })
 
     if (response.ok) {
-      const newExpense = await response.json()
+      const newExpense: Expense = await response.json()
       setExpenses(prev => [newExpense, ...prev])
       setActiveTab('list')
     } else {
       // Get error details from response
       let errorMessage = 'Failed to add expense'
       try {
-        const errorData = await response.json()
+        const errorData: { error?: string; details?: Array<{ path?: string[]; message: string }> } = await response.json()
         if (errorData.error) {
           errorMessage = errorData.error
         }
         if (errorData.details && Array.isArray(errorData.details)) {
           // Handle validation errors
-          const validationErrors = errorData.details.map((err: { path?: string[]; message: string }) => `${err.path?.join('.')}: ${err.message}`).join(', ')
+          const validationErrors = errorData.details.map((err) => `${err.path?.join('.')}: ${err.message}`).join(', ')
           errorMessage = `Validation errors: ${validationErrors}`
         }
       } catch {
@@ -93,7 +122,7 @@ export default function Home() {
   }
 
 
-  const handleFilterChange = (filters: ExpenseFilters) => {
+  const handleFilterChange = (filters: ExpenseFilters): void => {
     let filtered = [...expenses]
 
     if (filters.category) {
@@ -123,11 +152,28 @@ export default function Home() {
     setFilteredExpenses(filtered)
   }
 
-  const tabs = [
+  // Define tabs based on user role
+  const baseTabs = [
     { id: 'add', label: 'Add Expense', icon: Plus },
     { id: 'list', label: 'View Expenses', icon: BarChart3 },
+  ]
+
+  const managerTabs = [
+    ...baseTabs,
     { id: 'import-export', label: 'Import/Export', icon: FileSpreadsheet },
   ]
+
+  const adminTabs = [
+    ...managerTabs,
+    { id: 'admin', label: 'Admin', icon: Settings },
+  ]
+
+  // Determine which tabs to show based on user role
+  const tabs = userRole === 'ORGANIZATION_ADMIN' || userRole === 'SUPER_ADMIN' 
+    ? adminTabs
+    : userRole === 'MANAGER' || userRole === 'BUSINESS_OWNER'
+    ? managerTabs 
+    : baseTabs
 
   if (status === 'loading' || !session) {
     return (
@@ -193,7 +239,7 @@ export default function Home() {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as 'add' | 'list' | 'import-export')}
+                    onClick={() => setActiveTab(tab.id as 'add' | 'list' | 'import-export' | 'admin')}
                     className={`py-4 px-6 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
                       activeTab === tab.id
                         ? 'border-emerald-500 text-emerald-600 bg-emerald-50/50'
@@ -241,6 +287,13 @@ export default function Home() {
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-8">Import & Export</h2>
                   <ImportExportSection />
+                </div>
+              )}
+
+              {activeTab === 'admin' && (
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8">Organization Administration</h2>
+                  <UserManagement />
                 </div>
               )}
             </div>
