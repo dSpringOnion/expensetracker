@@ -7,15 +7,16 @@ import { ExpenseForm } from '@/components/forms/expense-form'
 import { ExpenseList } from '@/components/dashboard/expense-list'
 import { ExpenseStats } from '@/components/dashboard/expense-stats'
 import { ExpenseFilters as ExpenseFiltersComponent } from '@/components/dashboard/expense-filters'
+import { ImportExportSection } from '@/components/import-export/import-export-section'
 import { Expense, ExpenseFilters } from '@/types'
-import { Plus, BarChart3, LogOut, User } from 'lucide-react'
+import { Plus, BarChart3, LogOut, User, FileSpreadsheet } from 'lucide-react'
 
 export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([])
-  const [activeTab, setActiveTab] = useState<'add' | 'list'>('add')
+  const [activeTab, setActiveTab] = useState<'add' | 'list' | 'import-export'>('add')
   const [isLoading, setIsLoading] = useState(true)
 
   // Redirect to signin if not authenticated
@@ -125,6 +126,7 @@ export default function Home() {
   const tabs = [
     { id: 'add', label: 'Add Expense', icon: Plus },
     { id: 'list', label: 'View Expenses', icon: BarChart3 },
+    { id: 'import-export', label: 'Import/Export', icon: FileSpreadsheet },
   ]
 
   if (status === 'loading' || !session) {
@@ -191,7 +193,7 @@ export default function Home() {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as 'add' | 'list')}
+                    onClick={() => setActiveTab(tab.id as 'add' | 'list' | 'import-export')}
                     className={`py-4 px-6 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
                       activeTab === tab.id
                         ? 'border-emerald-500 text-emerald-600 bg-emerald-50/50'
@@ -232,6 +234,13 @@ export default function Home() {
                       setExpenses(prev => prev.filter(expense => expense.id !== id))
                     }}
                   />
+                </div>
+              )}
+
+              {activeTab === 'import-export' && (
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8">Import & Export</h2>
+                  <ImportExportSection />
                 </div>
               )}
             </div>
