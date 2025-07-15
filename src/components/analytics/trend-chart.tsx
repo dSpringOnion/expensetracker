@@ -87,7 +87,7 @@ export default function TrendChart({ className = '' }: TrendChartProps) {
       {!loading && !error && trends.length > 0 && (
         <div className="space-y-6">
           {/* Chart */}
-          <div className="h-64 flex items-end space-x-2 border-b border-gray-200 pb-4">
+          <div className="h-64 flex items-end space-x-2 border-b border-gray-200 pb-4 mt-8">
             {trends.map((trend, index) => {
               const height = maxAmount > 0 ? (trend.totalAmount / maxAmount) * 200 : 0
               const isPositiveChange = trend.previousPeriod && trend.previousPeriod.percentageChange > 0
@@ -95,7 +95,7 @@ export default function TrendChart({ className = '' }: TrendChartProps) {
               
               return (
                 <div key={index} className="flex-1 flex flex-col items-center">
-                  <div className="flex flex-col items-center mb-2 min-h-[40px]">
+                  <div className="flex flex-col items-center mb-2 min-h-[60px]">
                     <div className="text-xs font-medium text-gray-900 mb-1">
                       ${trend.totalAmount.toLocaleString()}
                     </div>
