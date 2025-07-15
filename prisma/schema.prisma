@@ -28,6 +28,7 @@ model Organization {
   businesses  Business[]
   users       User[]
   inviteCodes InviteCode[]  // New role-based invite codes
+  budgets     Budget[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
@@ -59,6 +60,8 @@ model Business {
   taxSettings    Json?
   locations      Location[]
   expenses       Expense[]
+  budgets        Budget[]
+  recurringExpenses RecurringExpense[]
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
@@ -74,6 +77,8 @@ model Location {
   managerEmail String?
   settings     Json?
   expenses     Expense[]
+  budgets      Budget[]
+  recurringExpenses RecurringExpense[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -89,6 +94,7 @@ model User {
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   expenses       Expense[]
+  recurringExpenses RecurringExpense[]
   isActive       Boolean       @default(true)
   lastLoginAt    DateTime?
   createdAt      DateTime      @default(now())
@@ -99,26 +105,28 @@ model User {
 }
 
 model Expense {
-  id             String    @id @default(cuid())
-  title          String
-  amount         Float
-  category       String
-  categories     String[] // Multiple categories support
-  description    String?
-  date           DateTime
-  receiptUrl     String?
-  expenseCode    String?
-  taxDeductible  Boolean   @default(true)
-  vendorName     String?
-  approvalStatus String    @default("pending")
-  userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  businessId     String?
-  business       Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
-  locationId     String?
-  location       Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                 String           @id @default(cuid())
+  title              String
+  amount             Float
+  category           String
+  categories         String[] // Multiple categories support
+  description        String?
+  date               DateTime
+  receiptUrl         String?
+  expenseCode        String?
+  taxDeductible      Boolean          @default(true)
+  vendorName         String?
+  approvalStatus     String           @default("pending")
+  userId             String
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId         String?
+  business           Business?        @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  locationId         String?
+  location           Location?        @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  recurringExpenseId String?
+  recurringExpense   RecurringExpense? @relation(fields: [recurringExpenseId], references: [id], onDelete: SetNull)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   @@index([userId])
   @@index([category])
@@ -126,4 +134,68 @@ model Expense {
   @@index([businessId])
   @@index([locationId])
   @@index([approvalStatus])
+  @@index([recurringExpenseId])
+}
+
+model Budget {
+  id             String   @id @default(cuid())
+  name           String
+  amount         Float
+  period         String   // 'monthly', 'quarterly', 'yearly'
+  startDate      DateTime
+  endDate        DateTime?
+  category       String?  // Optional category restriction
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  businessId     String?
+  business       Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  locationId     String?
+  location       Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  alertThreshold Float    @default(0.8) // Alert when 80% of budget is reached
+  isActive       Boolean  @default(true)
+  createdBy      String   // User ID who created this budget
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([businessId])
+  @@index([locationId])
+  @@index([category])
+  @@index([period])
+}
+
+model RecurringExpense {
+  id             String    @id @default(cuid())
+  title          String
+  amount         Float
+  category       String
+  categories     String[]
+  description    String?
+  frequency      String    // 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'
+  startDate      DateTime
+  endDate        DateTime?
+  nextDueDate    DateTime
+  dayOfMonth     Int?      // For monthly/quarterly/yearly (1-31)
+  dayOfWeek      Int?      // For weekly (0-6, Sunday=0)
+  expenseCode    String?
+  taxDeductible  Boolean   @default(true)
+  vendorName     String?
+  isActive       Boolean   @default(true)
+  autoCreate     Boolean   @default(false) // Auto-create expenses
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId     String?
+  business       Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  locationId     String?
+  location       Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  expenses       Expense[] // Generated expenses from this recurring expense
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([frequency])
+  @@index([nextDueDate])
+  @@index([businessId])
+  @@index([locationId])
+  @@index([isActive])
 }

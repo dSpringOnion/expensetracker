@@ -44,3 +44,4 @@ next-env.d.ts
 
 # Internal development documentation
 /docs/
+DEVELOPMENT_NOTES.md

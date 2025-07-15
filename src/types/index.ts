@@ -168,3 +168,223 @@ export const APPROVAL_STATUSES = [
 ] as const
 
 export type ApprovalStatus = typeof APPROVAL_STATUSES[number]
+
+export interface Budget {
+  id: string
+  name: string
+  amount: number
+  period: BudgetPeriod
+  startDate: Date
+  endDate?: Date
+  category?: string
+  organizationId: string
+  businessId?: string
+  locationId?: string
+  alertThreshold: number
+  isActive: boolean
+  createdBy: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface CreateBudgetData {
+  name: string
+  amount: number
+  period: BudgetPeriod
+  startDate: Date
+  endDate?: Date
+  category?: string
+  businessId?: string
+  locationId?: string
+  alertThreshold?: number
+}
+
+export interface RecurringExpense {
+  id: string
+  title: string
+  amount: number
+  category: string
+  categories: string[]
+  description?: string
+  frequency: RecurringFrequency
+  startDate: Date
+  endDate?: Date
+  nextDueDate: Date
+  dayOfMonth?: number
+  dayOfWeek?: number
+  expenseCode?: string
+  taxDeductible: boolean
+  vendorName?: string
+  isActive: boolean
+  autoCreate: boolean
+  userId: string
+  businessId?: string
+  locationId?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface CreateRecurringExpenseData {
+  title: string
+  amount: number
+  category: string
+  categories?: string[]
+  description?: string
+  frequency: RecurringFrequency
+  startDate: Date
+  endDate?: Date
+  dayOfMonth?: number
+  dayOfWeek?: number
+  expenseCode?: string
+  taxDeductible?: boolean
+  vendorName?: string
+  autoCreate?: boolean
+  businessId?: string
+  locationId?: string
+}
+
+export interface BudgetStats {
+  budgetId: string
+  budgetName: string
+  budgetAmount: number
+  spentAmount: number
+  remainingAmount: number
+  percentageUsed: number
+  isOverBudget: boolean
+  alertTriggered: boolean
+  period: BudgetPeriod
+  daysRemaining?: number
+}
+
+export const BUDGET_PERIODS = [
+  'monthly',
+  'quarterly',
+  'yearly'
+] as const
+
+export type BudgetPeriod = typeof BUDGET_PERIODS[number]
+
+export const RECURRING_FREQUENCIES = [
+  'daily',
+  'weekly',
+  'monthly',
+  'quarterly',
+  'yearly'
+] as const
+
+export type RecurringFrequency = typeof RECURRING_FREQUENCIES[number]
+
+// Advanced Analytics Types
+export interface TrendAnalysis {
+  period: string
+  totalExpenses: number
+  totalAmount: number
+  averageAmount: number
+  transactionCount: number
+  previousPeriod?: {
+    totalAmount: number
+    percentageChange: number
+  }
+}
+
+export interface SpendingPattern {
+  category: string
+  amount: number
+  percentage: number
+  trend: 'increasing' | 'decreasing' | 'stable'
+  averagePerTransaction: number
+  transactionCount: number
+}
+
+export interface LocationSpendingPattern {
+  locationId: string
+  locationName: string
+  businessName: string
+  amount: number
+  percentage: number
+  topCategories: Array<{
+    category: string
+    amount: number
+    percentage: number
+  }>
+}
+
+export interface VendorAnalysis {
+  vendorName: string
+  totalAmount: number
+  transactionCount: number
+  averageAmount: number
+  lastTransactionDate: Date
+  topCategories: string[]
+  trend: 'increasing' | 'decreasing' | 'stable'
+}
+
+export interface BudgetForecast {
+  budgetId: string
+  budgetName: string
+  currentSpending: number
+  projectedSpending: number
+  projectedOverage: number
+  daysRemaining: number
+  dailyBurnRate: number
+  recommendedDailySpending: number
+}
+
+export interface CustomReportFilters {
+  dateRange: {
+    start: Date
+    end: Date
+  }
+  categories?: string[]
+  businesses?: string[]
+  locations?: string[]
+  vendors?: string[]
+  minAmount?: number
+  maxAmount?: number
+  taxDeductibleOnly?: boolean
+  groupBy?: 'day' | 'week' | 'month' | 'category' | 'location' | 'vendor'
+  sortBy?: 'date' | 'amount' | 'category'
+  sortOrder?: 'asc' | 'desc'
+}
+
+export interface CustomReportData {
+  summary: {
+    totalAmount: number
+    transactionCount: number
+    averageAmount: number
+    dateRange: {
+      start: Date
+      end: Date
+    }
+  }
+  groupedData: Array<{
+    label: string
+    amount: number
+    transactionCount: number
+    percentage: number
+  }>
+  trendData: TrendAnalysis[]
+  topCategories: SpendingPattern[]
+  topVendors: VendorAnalysis[]
+}
+
+export interface DashboardWidget {
+  id: string
+  type: 'spending-summary' | 'budget-overview' | 'category-breakdown' | 'trend-chart' | 'vendor-analysis' | 'location-spending'
+  title: string
+  position: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+  config?: Record<string, unknown>
+  isVisible: boolean
+}
+
+export interface AnalyticsTimeframe {
+  label: string
+  value: 'last7days' | 'last30days' | 'last90days' | 'last12months' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'lastYear' | 'custom'
+  startDate?: Date
+  endDate?: Date
+}

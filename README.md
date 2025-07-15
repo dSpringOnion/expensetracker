@@ -300,18 +300,31 @@ The app can be deployed to any platform that supports Next.js:
 ✅ **Error Handling**: Form data persists on submission failure
 ✅ **Real-time Analytics**: Expense statistics and filtering
 
-## Future Enhancements
+## Feature Roadmap
 
-- Expense deletion API endpoints
-- Real OCR integration (Tesseract.js, Google Vision API)
-- Export to CSV/PDF
-- Budget tracking and alerts
-- Multi-currency support
-- Enhanced role-based permissions
-- Mobile app (React Native)
-- Dark mode
-- Advanced data visualization charts
-- Admin interface for organization management
+The application follows a phased rollout approach to gradually transform from a basic expense tracker into a comprehensive financial management platform:
+
+### ✅ Phase 1: Core Budget & Automation Features (COMPLETED)
+- **Budget Management**: Create and track budgets with real-time spending monitoring
+- **Recurring Expenses**: Automated expense generation with flexible scheduling
+- **Enhanced Mobile Experience**: Responsive design optimized for mobile devices
+
+### 🚀 Phase 2: Business Integration Features (PLANNED)
+- Bank account integration for automatic transaction import
+- Advanced analytics and reporting with customizable dashboards
+- Vendor and supplier management system
+
+### 📈 Phase 3: Enterprise & Compliance Features (PLANNED)
+- Multi-level approval workflows
+- Tax and compliance management
+- Enhanced security with SSO and audit trails
+
+### 🤖 Phase 4: Advanced Automation & Intelligence (PLANNED)
+- AI-powered expense categorization and fraud detection
+- Native mobile applications with offline capabilities
+- ERP and payroll system integrations
+
+For detailed feature specifications and implementation timeline, see `/docs/FEATURE_ROADMAP.md`.
 
 ## Contributing
 

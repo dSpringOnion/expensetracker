@@ -10,14 +10,21 @@ import { ExpenseFilters as ExpenseFiltersComponent } from '@/components/dashboar
 import { ImportExportSection } from '@/components/import-export/import-export-section'
 import { UserManagement } from '@/components/admin/user-management'
 import { Expense, ExpenseFilters } from '@/types'
-import { Plus, BarChart3, LogOut, User, FileSpreadsheet, Settings } from 'lucide-react'
+import { Plus, BarChart3, LogOut, User, FileSpreadsheet, Settings, DollarSign, Repeat, TrendingUp } from 'lucide-react'
+import BudgetOverview from '@/components/budget/budget-overview'
+import BudgetForm from '@/components/budget/budget-form'
+import RecurringExpensesList from '@/components/recurring/recurring-expenses-list'
+import RecurringExpenseForm from '@/components/recurring/recurring-expense-form'
+import AnalyticsDashboard from '@/components/analytics/analytics-dashboard'
 
 export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([])
-  const [activeTab, setActiveTab] = useState<'add' | 'list' | 'import-export' | 'admin'>('add')
+  const [activeTab, setActiveTab] = useState<'add' | 'list' | 'budgets' | 'recurring' | 'analytics' | 'import-export' | 'admin'>('add')
+  const [showBudgetForm, setShowBudgetForm] = useState(false)
+  const [showRecurringForm, setShowRecurringForm] = useState(false)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -156,6 +163,9 @@ export default function Home() {
   const baseTabs = [
     { id: 'add', label: 'Add Expense', icon: Plus },
     { id: 'list', label: 'View Expenses', icon: BarChart3 },
+    { id: 'budgets', label: 'Budgets', icon: DollarSign },
+    { id: 'recurring', label: 'Recurring', icon: Repeat },
+    { id: 'analytics', label: 'Analytics', icon: TrendingUp },
   ]
 
   const managerTabs = [
@@ -235,28 +245,29 @@ export default function Home() {
 
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mb-6 overflow-hidden backdrop-blur-sm">
             <div className="border-b border-gray-100 bg-gray-50/50">
-              <nav className="flex space-x-8 px-6">
+              <nav className="flex overflow-x-auto scrollbar-hide px-3 sm:px-6">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as 'add' | 'list' | 'import-export' | 'admin')}
-                    className={`py-4 px-6 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
+                    onClick={() => setActiveTab(tab.id as 'add' | 'list' | 'budgets' | 'recurring' | 'analytics' | 'import-export' | 'admin')}
+                    className={`py-4 px-3 sm:px-6 border-b-2 font-semibold text-xs sm:text-sm flex items-center gap-1 sm:gap-2 transition-all duration-200 whitespace-nowrap ${
                       activeTab === tab.id
                         ? 'border-emerald-500 text-emerald-600 bg-emerald-50/50'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    <tab.icon className="h-4 w-4" />
-                    {tab.label}
+                    <tab.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
                   </button>
                 ))}
               </nav>
             </div>
 
-            <div className="p-8">
+            <div className="p-4 sm:p-8">
               {activeTab === 'add' && (
                 <div className="max-w-md mx-auto">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-8">Add New Expense</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Add New Expense</h2>
                   <ExpenseForm onSubmit={handleAddExpense} />
                 </div>
               )}
@@ -264,7 +275,7 @@ export default function Home() {
 
               {activeTab === 'list' && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-8">Your Expenses</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Your Expenses</h2>
                   
                   <ExpenseStats expenses={filteredExpenses} className="mb-6" />
                   
@@ -280,6 +291,70 @@ export default function Home() {
                       setExpenses(prev => prev.filter(expense => expense.id !== id))
                     }}
                   />
+                </div>
+              )}
+
+              {activeTab === 'budgets' && (
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Budget Management</h2>
+                    <button
+                      onClick={() => setShowBudgetForm(!showBudgetForm)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 justify-center sm:justify-start"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="text-sm sm:text-base">{showBudgetForm ? 'Cancel' : 'Create Budget'}</span>
+                    </button>
+                  </div>
+
+                  {showBudgetForm && (
+                    <div className="mb-8">
+                      <BudgetForm 
+                        onSuccess={() => {
+                          setShowBudgetForm(false)
+                          // Refresh budget overview
+                        }}
+                        onCancel={() => setShowBudgetForm(false)}
+                      />
+                    </div>
+                  )}
+
+                  <BudgetOverview />
+                </div>
+              )}
+
+              {activeTab === 'recurring' && (
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Recurring Expenses</h2>
+                    <button
+                      onClick={() => setShowRecurringForm(!showRecurringForm)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 justify-center sm:justify-start"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="text-sm sm:text-base">{showRecurringForm ? 'Cancel' : 'Add Recurring'}</span>
+                    </button>
+                  </div>
+
+                  {showRecurringForm && (
+                    <div className="mb-8">
+                      <RecurringExpenseForm 
+                        onSuccess={() => {
+                          setShowRecurringForm(false)
+                          // Refresh recurring expenses list
+                        }}
+                        onCancel={() => setShowRecurringForm(false)}
+                      />
+                    </div>
+                  )}
+
+                  <RecurringExpensesList />
+                </div>
+              )}
+
+              {activeTab === 'analytics' && (
+                <div>
+                  <AnalyticsDashboard />
                 </div>
               )}
 

@@ -114,3 +114,20 @@ body {
 .btn-slack-secondary:hover {
   background-color: var(--hover-background);
 }
+
+/* Custom scrollbar styles */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile-friendly touch scrolling */
+@media (max-width: 640px) {
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
