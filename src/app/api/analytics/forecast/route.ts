@@ -50,8 +50,8 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Skip if budget period has ended
-      if (periodEnd <= now) continue
+      // Skip if budget period has ended or no period end date
+      if (!periodEnd || periodEnd <= now) continue
 
       // Get expenses for this budget period
       const expenseFilters: Record<string, unknown> = {

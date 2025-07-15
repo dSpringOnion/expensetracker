@@ -4,8 +4,9 @@ import { db } from '@/lib/db'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const token = await getToken({ 
       req: request, 
@@ -69,7 +70,7 @@ export async function POST(
     const nextDueDate = calculateNextDueDate(
       recurringExpense.nextDueDate,
       recurringExpense.frequency,
-      recurringExpense.dayOfMonth
+      recurringExpense.dayOfMonth || undefined
     )
 
     // Update the recurring expense with the new next due date

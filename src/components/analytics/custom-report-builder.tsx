@@ -310,7 +310,7 @@ export default function CustomReportBuilder({ className = '' }: CustomReportBuil
             {/* Grouped Data */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Breakdown by {filters.groupBy?.charAt(0).toUpperCase() + filters.groupBy?.slice(1)}
+                Breakdown by {filters.groupBy ? filters.groupBy.charAt(0).toUpperCase() + filters.groupBy.slice(1) : 'Category'}
               </h4>
               
               <div className="space-y-2">
