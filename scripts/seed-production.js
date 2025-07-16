@@ -115,8 +115,11 @@ async function seedProductionDatabase() {
     }
     console.log('✅ Locations created');
 
-    // 4. Create demo user
+    // 4. Create demo user with password
     console.log('Creating demo user...');
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash('password123', 10);
+    
     const demoUser = await prisma.user.upsert({
       where: { email: 'demo@multicorp.com' },
       update: {},
@@ -124,6 +127,7 @@ async function seedProductionDatabase() {
         email: 'demo@multicorp.com',
         name: 'Demo Manager',
         role: 'EMPLOYEE',
+        password: hashedPassword,
         organizationId: org.id
       }
     });
