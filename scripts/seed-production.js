@@ -51,6 +51,12 @@ async function seedProductionDatabase() {
   console.log('🌱 Seeding production database with demo data...\n');
 
   try {
+    // Check if already seeded
+    const existingExpenses = await prisma.expense.count();
+    if (existingExpenses > 100) {
+      console.log('📊 Database already contains substantial data, skipping seeding');
+      return;
+    }
     // 1. Create organization
     console.log('Creating organization...');
     const org = await prisma.organization.upsert({
