@@ -118,11 +118,14 @@ async function seedProductionDatabase() {
     // 4. Create demo user with password
     console.log('Creating demo user...');
     const bcrypt = require('bcryptjs');
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    const hashedPassword = await bcrypt.hash('password123', 12); // Use same hash rounds as signup
     
     const demoUser = await prisma.user.upsert({
       where: { email: 'demo@multicorp.com' },
-      update: {},
+      update: {
+        password: hashedPassword, // Update password if user exists
+        organizationId: org.id
+      },
       create: {
         email: 'demo@multicorp.com',
         name: 'Demo Manager',
@@ -131,7 +134,8 @@ async function seedProductionDatabase() {
         organizationId: org.id
       }
     });
-    console.log('✅ Demo user created');
+    console.log('✅ Demo user created:', demoUser.email);
+    console.log('🔐 Demo login: demo@multicorp.com / password123');
 
     // 5. Generate comprehensive expense data (500+ records)
     console.log('Generating comprehensive expense data...');
