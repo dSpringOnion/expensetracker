@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
         
         // Get expenses within budget period and criteria
         const expenseWhere: Record<string, unknown> = {
-          userId: token.sub,
+          user: { organizationId: user.organizationId }, // Filter by organization instead of specific user
           date: {
             gte: startDate,
             lte: endDate

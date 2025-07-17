@@ -142,6 +142,15 @@ async function seedProductionDatabase() {
     const expenseCount = 500;
     const expenses = [];
 
+    // Get all users in the organization to distribute expenses
+    const orgUsers = await prisma.user.findMany({
+      where: { organizationId: org.id },
+      select: { id: true }
+    });
+    
+    // If no users found, use the demo user
+    const userIds = orgUsers.length > 0 ? orgUsers.map(u => u.id) : [demoUser.id];
+
     for (let i = 0; i < expenseCount; i++) {
       const randomBusiness = getRandomElement(businesses);
       const randomLocation = getRandomElement(locations.filter(l => l.businessId === randomBusiness.id));
@@ -156,7 +165,7 @@ async function seedProductionDatabase() {
         vendorName: getRandomElement(VENDORS),
         taxDeductible: Math.random() > 0.3,
         approvalStatus: Math.random() > 0.1 ? 'approved' : 'pending',
-        userId: demoUser.id,
+        userId: getRandomElement(userIds), // Distribute across all org users
         businessId: randomBusiness.id,
         locationId: randomLocation.id
       };
