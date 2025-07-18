@@ -111,6 +111,19 @@ export async function GET(request: NextRequest) {
     
     const userId = session.user.id
     
+    // Get user with organization info
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      include: { organization: true }
+    })
+    
+    if (!user?.organizationId) {
+      return NextResponse.json(
+        { error: 'Organization not found' },
+        { status: 404 }
+      )
+    }
+    
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
     const businessId = searchParams.get('businessId')
@@ -120,7 +133,7 @@ export async function GET(request: NextRequest) {
     
     const expenses = await db.expense.findMany({
       where: {
-        userId,
+        user: { organizationId: user.organizationId },
         ...(category && { category }),
         ...(businessId && { businessId }),
         ...(locationId && { locationId }),
