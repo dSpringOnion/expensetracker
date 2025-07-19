@@ -323,16 +323,15 @@ export function FileUpload({
           className="hidden"
           id="file-upload"
         />
-        <Label htmlFor="file-upload" className="flex-1">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            {previewUrl ? 'Change File' : 'Choose File'}
-          </Button>
-        </Label>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => document.getElementById('file-upload')?.click()}
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          {previewUrl ? 'Change File' : 'Choose File'}
+        </Button>
       </div>
 
       {error && (
