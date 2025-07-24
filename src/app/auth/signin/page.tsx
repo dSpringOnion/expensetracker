@@ -54,7 +54,7 @@ function SignInForm() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl mb-6 shadow-lg">
-            <img src="/SJ.png" alt="SJ Logo" className="w-8 h-8" />
+            <img src="/SJ.png" alt="SJ Logo" className="w-12 h-12" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900">
             Sign in to your account

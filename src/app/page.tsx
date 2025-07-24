@@ -231,7 +231,7 @@ export default function Home() {
 
           <header className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl mb-6 shadow-lg">
-              <img src="/SJ.png" alt="SJ Logo" className="w-8 h-8" />
+              <img src="/SJ.png" alt="SJ Logo" className="w-12 h-12" />
             </div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-4">
               Expense Tracker
